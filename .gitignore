@@ -152,7 +152,6 @@ x86/
 
 # NuGet
 *.nupkg
-!**/[Pp]ackages/build/
 *.nuget.props
 *.nuget.targets
 
