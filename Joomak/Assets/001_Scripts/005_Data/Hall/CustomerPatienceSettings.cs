@@ -1,4 +1,5 @@
 using System;
+using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 
 namespace _001_Scripts._005_Data.Hall
@@ -17,9 +18,9 @@ namespace _001_Scripts._005_Data.Hall
         [SerializeField, Min(1f)] private float minEatSeconds = 10f;
         [SerializeField, Min(1f)] private float maxEatSeconds = 60f;
 
-        public float SeatSeconds => seatSeconds;
-        public float OrderSeconds => orderSeconds;
-        public float FoodSeconds => foodSeconds;
+        public float SeatSeconds => seatSeconds + UpgradeApi.PatienceBonusSeconds;
+        public float OrderSeconds => orderSeconds + UpgradeApi.PatienceBonusSeconds;
+        public float FoodSeconds => foodSeconds + UpgradeApi.PatienceBonusSeconds;
         public float DecideSeconds => decideSeconds;
 
         public float RandomEatSeconds => UnityEngine.Random.Range(minEatSeconds, Mathf.Max(minEatSeconds, maxEatSeconds));

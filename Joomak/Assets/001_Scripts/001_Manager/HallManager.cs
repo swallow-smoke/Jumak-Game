@@ -7,6 +7,7 @@ using _001_Scripts._003_Object._000_Structure.Hall;
 using _001_Scripts._003_Object._001_Entity.NPC;
 using _001_Scripts._005_Data._000_Item;
 using _001_Scripts._005_Data.Hall;
+using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 
 namespace _001_Scripts._001_Manager
@@ -41,7 +42,8 @@ namespace _001_Scripts._001_Manager
             subscriptions.Add(HallMessagePort.OnDishReady(OnDishReady));
             subscriptions.Add(HallMessagePort.OnOrderStatusChanged(OnOrderStatusChanged));
 
-            SetUnlockedTableCount(startingTableCount);
+            UpgradeApi.UpgradePurchased += OnUpgradePurchased;
+            SetUnlockedTableCount(startingTableCount + UpgradeApi.AddedTableCount);
         }
 
         // 테이블은 씬에 미리 다 놓여 있고, 잠긴 것은 꺼둔다.
@@ -64,6 +66,7 @@ namespace _001_Scripts._001_Manager
 
         protected override void OnDestroy()
         {
+            UpgradeApi.UpgradePurchased -= OnUpgradePurchased;
             subscriptions.Dispose();
             base.OnDestroy();
         }
@@ -283,6 +286,14 @@ namespace _001_Scripts._001_Manager
         // ---------------- 내부 ----------------
 
         private void OnDishReady(DishReadyMsgData data) => UpdateOrderStatus(data.OrderId, HallOrderStatus.Ready);
+
+        private void OnUpgradePurchased(UpgradeId id, int _)
+        {
+            if (id == UpgradeId.TableAdd)
+            {
+                SetUnlockedTableCount(startingTableCount + UpgradeApi.AddedTableCount);
+            }
+        }
 
         private void OnOrderStatusChanged(OrderStatusChangedMsgData data)
         {

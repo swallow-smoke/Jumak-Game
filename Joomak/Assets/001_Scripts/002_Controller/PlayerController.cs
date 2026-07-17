@@ -2,6 +2,7 @@ using _001_Scripts._002_Controller.Interface;
 using _001_Scripts._003_Object.Interface;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
+using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -14,6 +15,12 @@ namespace _001_Scripts._002_Controller
         [Header("Movement")]
         [SerializeField, Min(0f)] private float moveSpeed = 5f;
         [SerializeField, Min(0f)] private float rotationLerpSpeed = 10f;
+
+        [Header("Dash Upgrade")]
+        [Tooltip("None이면 WASD 플레이어는 왼쪽 Shift, 방향키 플레이어는 오른쪽 Shift를 사용합니다.")]
+        [SerializeField] private Key dashKey = Key.None;
+        [SerializeField, Min(0.1f)] private float dashDistance = 2.6f;
+        [SerializeField, Min(0.1f)] private float dashCooldownSeconds = 5f;
 
         [Header("Key Map")]
         [SerializeField] private Key moveUpKey = Key.W;
@@ -36,6 +43,8 @@ namespace _001_Scripts._002_Controller
         private ContactFilter2D interactionFilter;
         private IInteractable focusedInteractable;
         private InteractionOutline2D focusedOutline;
+        private float dashCooldown;
+        private bool dashQueued;
 
         private void Awake()
         {
@@ -59,6 +68,12 @@ namespace _001_Scripts._002_Controller
             }
 
             moveInput = ReadMoveInput(keyboard);
+            dashCooldown = Mathf.Max(0f, dashCooldown - Time.deltaTime);
+            if (UpgradeApi.DashUnlocked && dashCooldown <= 0f && keyboard[EffectiveDashKey].wasPressedThisFrame)
+            {
+                dashQueued = true;
+            }
+
             if (moveInput.sqrMagnitude > 0f)
             {
                 lookDirection = moveInput.normalized;
@@ -101,7 +116,16 @@ namespace _001_Scripts._002_Controller
 
         private void FixedUpdate()
         {
-            Vector2 nextPosition = body.position + moveInput * (moveSpeed * Time.fixedDeltaTime);
+            if (dashQueued)
+            {
+                dashQueued = false;
+                dashCooldown = dashCooldownSeconds;
+                body.MovePosition(body.position + lookDirection * dashDistance);
+                return;
+            }
+
+            float effectiveSpeed = moveSpeed * UpgradeApi.MoveSpeedMultiplier;
+            Vector2 nextPosition = body.position + moveInput * (effectiveSpeed * Time.fixedDeltaTime);
             body.MovePosition(nextPosition);
 
             // 스프라이트 기본 방향(위)을 기준으로 바라보는 방향까지 서서히 회전시킨다.
@@ -113,8 +137,13 @@ namespace _001_Scripts._002_Controller
         private void OnDisable()
         {
             moveInput = Vector2.zero;
+            dashQueued = false;
             SetFocusedObject(null);
         }
+
+        private Key EffectiveDashKey => dashKey != Key.None
+            ? dashKey
+            : moveUpKey == Key.W ? Key.LeftShift : Key.RightShift;
 
         private Vector2 ReadMoveInput(Keyboard keyboard)
         {

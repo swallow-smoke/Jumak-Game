@@ -1,4 +1,5 @@
 using System;
+using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 
 namespace _001_Scripts._001_Manager
@@ -10,7 +11,7 @@ namespace _001_Scripts._001_Manager
         [SerializeField, Min(1)] private int maxValue = 100;
 
         public int Current { get; private set; }
-        public int MaxValue => maxValue;
+        public int MaxValue => UpgradeApi.MaxReputation;
         public bool IsGameOver { get; private set; }
 
         public event Action<int> Changed;
@@ -19,8 +20,15 @@ namespace _001_Scripts._001_Manager
         public override void Initialize()
         {
             IsGameOver = false;
-            Current = Mathf.Clamp(startValue, 0, maxValue);
-            Changed?.Invoke(Current);
+            UpgradeApi.EnsureInitialized(0, startValue, maxValue);
+            UpgradeApi.ReputationChanged += OnApiReputationChanged;
+            OnApiReputationChanged(UpgradeApi.Reputation);
+        }
+
+        protected override void OnDestroy()
+        {
+            UpgradeApi.ReputationChanged -= OnApiReputationChanged;
+            base.OnDestroy();
         }
 
         public void Penalize(int amount, string reason)
@@ -38,7 +46,12 @@ namespace _001_Scripts._001_Manager
                 return;
             }
 
-            Current = Mathf.Clamp(Current + delta, 0, maxValue);
+            UpgradeApi.AddReputation(delta);
+        }
+
+        private void OnApiReputationChanged(int value)
+        {
+            Current = value;
             Changed?.Invoke(Current);
 
             if (Current > 0)

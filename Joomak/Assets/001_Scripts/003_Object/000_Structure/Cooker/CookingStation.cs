@@ -5,6 +5,7 @@ using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using _001_Scripts._003_Object.Interface;
 using _001_Scripts._005_Data._000_Item;
+using _001_Scripts._005_Data.Upgrade;
 using TMPro;
 using UnityEngine;
 
@@ -64,7 +65,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
 
                 case State.Ready when !outputIsFailed:
                     readyElapsedSeconds += Time.deltaTime;
-                    if (readyElapsedSeconds >= failTimeoutSeconds)
+                    if (readyElapsedSeconds >= failTimeoutSeconds * UpgradeApi.FailureDelayMultiplier)
                     {
                         TurnOutputIntoFailedDish();
                     }
@@ -152,7 +153,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
 
             if (selectedRecipe.TryConsumeIngredients(ingredientInventory))
             {
-                remainingCookTime = selectedRecipe.CookTime;
+                remainingCookTime = selectedRecipe.CookTime * UpgradeApi.CookTimeMultiplier;
                 state = State.Cooking;
             }
         }

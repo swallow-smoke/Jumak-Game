@@ -1,4 +1,5 @@
 using System;
+using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 
 namespace _001_Scripts._005_Data.Hall
@@ -27,8 +28,8 @@ namespace _001_Scripts._005_Data.Hall
         public float EventInterval => eventInterval;
         public float ResolveSeconds => resolveSeconds;
         public float DineAndDashTelegraphSeconds => dineAndDashTelegraphSeconds;
-        public int RowdyHits => rowdyHits;
-        public int TrashHits => trashHits;
+        public int RowdyHits => UpgradeApi.IronBroomUnlocked ? 3 : rowdyHits;
+        public int TrashHits => UpgradeApi.IronBroomUnlocked ? 2 : trashHits;
         public int DineAndDashHits => dineAndDashHits;
 
         public bool RollRowdy() => UnityEngine.Random.value < rowdyChance;

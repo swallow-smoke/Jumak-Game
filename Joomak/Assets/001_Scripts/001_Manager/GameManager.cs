@@ -1,5 +1,6 @@
 using System;
 using _001_Scripts._005_Data.GameData;
+using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 
 namespace _001_Scripts._001_Manager
@@ -13,12 +14,20 @@ namespace _001_Scripts._001_Manager
 
         public override void Initialize()
         {
+            UpgradeApi.EnsureInitialized(gameData.Money);
+            UpgradeApi.MoneyChanged += OnApiMoneyChanged;
             Debug.Log("GameManager Initialized");
         }
 
-        public int GetMoney() => gameData.Money;
+        protected override void OnDestroy()
+        {
+            UpgradeApi.MoneyChanged -= OnApiMoneyChanged;
+            base.OnDestroy();
+        }
 
-        public bool CanAfford(int cost) => gameData.CanAfford(cost);
+        public int GetMoney() => UpgradeApi.Money;
+
+        public bool CanAfford(int cost) => cost >= 0 && UpgradeApi.Money >= cost;
 
         public void UpdateMoney(int delta, string reason)
         {
@@ -27,21 +36,22 @@ namespace _001_Scripts._001_Manager
                 return;
             }
 
-            int current = gameData.AddMoney(delta);
+            int current = UpgradeApi.AddMoney(delta);
             Debug.Log($"[Money] {(delta > 0 ? "+" : "")}{delta}전 ({reason}) -> {current}전");
-            MoneyChanged?.Invoke(current);
         }
 
         // 상점용. 잔액이 모자라면 아무것도 차감하지 않고 false.
         public bool TrySpendMoney(int cost, string reason)
         {
-            if (!gameData.CanAfford(cost))
+            if (!UpgradeApi.TrySpendMoney(cost))
             {
                 return false;
             }
 
-            UpdateMoney(-cost, reason);
+            Debug.Log($"[Money] -{cost}전 ({reason}) -> {UpgradeApi.Money}전");
             return true;
         }
+
+        private void OnApiMoneyChanged(int value) => MoneyChanged?.Invoke(value);
     }
 }
