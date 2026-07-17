@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc8c4ad613d27f747afd0b886370917f, type: 3}
-  m_Name: rice
+  m_Name: broom
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._005_Data._000_Item.ItemData
-  itemId: rice
-  displayName: "\uC300\uBC25"
-  category: 1
-  processingLevel: 1
+  itemId: broom
+  displayName: "\uBE57\uC790\uB8E8"
+  category: 2
+  processingLevel: 0
   maxStack: 99
-  price: 5
-  worldPrefab: {fileID: 5293276979143101140, guid: e41438fdb6fd67a47b4f6cc2032851a5, type: 3}
+  price: 0
+  worldPrefab: {fileID: 5366906351874368637, guid: 1bb929024d1e1b84899cd7f0ff594ee8, type: 3}

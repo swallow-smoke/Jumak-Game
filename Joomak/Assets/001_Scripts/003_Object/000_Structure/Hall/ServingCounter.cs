@@ -78,7 +78,7 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
 
             if (pickedItem.Category == ItemCategory.Dish && HallManager.Instance != null)
             {
-                HallManager.Instance.NotifyDishCollected(pickedItem.ItemId, interactor);
+                HallManager.Instance.TryCollectDish(pickedItem.ItemId, interactor);
             }
         }
     }

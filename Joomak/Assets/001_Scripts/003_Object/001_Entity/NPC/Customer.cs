@@ -10,15 +10,22 @@ using UnityEngine;
 
 namespace _001_Scripts._003_Object._001_Entity.NPC
 {
-    public sealed class Customer : BaseEntity, IInteractable
+    public sealed class Customer : BaseEntity, IBroomTarget
     {
         private const int TimeoutPenalty = 5;
+        private const float FallbackResolveSeconds = 30f;
+        private const float FallbackTelegraphSeconds = 3f;
 
         [Header("Movement")]
-        [SerializeField, Min(0f)] private float moveSpeed = 3f;
+        [SerializeField, Min(0f)] private float moveSpeed = 2.4f;
         [SerializeField, Min(0.01f)] private float arriveThreshold = 0.1f;
         [SerializeField, Min(0.1f)] private float followDistance = 1f;
 
+        [Header("Visual")]
+        [SerializeField] private SpriteRenderer visual;
+        [SerializeField] private Color dineAndDashColor = new(0.9f, 0.15f, 0.15f);
+
+        private Color defaultColor;
         private HallManager hall;
         private CustomerPatienceSettings patience;
         private CustomerEscort escort;
@@ -29,19 +36,59 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         private float stateTimer;
         private float seatTimer;
         private float eatDuration;
+        private int remainingHits;
 
         public CustomerState State { get; private set; } = CustomerState.WaitingForSeat;
         public ItemBase OrderedDish => orderedDish;
+        public bool HasPaid { get; private set; }
         public Guid OrderId { get; private set; }
         public string CustomerId => ObjectId.ToString();
-        public bool IsWaitingForSeat => State is CustomerState.WaitingForSeat or CustomerState.Following;
+
+        // 손놈은 자리에 앉지 않지만 입구 자리를 차지하고 난동을 부린다.
+        public bool OccupiesWaitingSpot =>
+            State is CustomerState.WaitingForSeat or CustomerState.Following or CustomerState.Rowdy;
+
+        // 빗자루가 필요한 건 난동 중이거나 도주 중일 때뿐. 평소엔 맨손으로 접객한다.
+        public bool RequiresBroom => State is CustomerState.Rowdy or CustomerState.DineAndDash;
+
+        // 남은 연타 횟수. 손놈 5회 / 먹튀 1회 (기획서 8번)
+        public int RemainingHits => remainingHits;
+
+        private static HallEventSettings EventSettings =>
+            EventManager.Instance != null ? EventManager.Instance.Settings : null;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            // 인스펙터에서 안 물려줬으면 Visual 자식을 찾는다.
+            // 하이라이트 외곽선은 나중에 붙으므로 이 시점엔 본체 스프라이트만 있다.
+            if (visual == null)
+            {
+                visual = GetComponentInChildren<SpriteRenderer>();
+            }
+
+            if (visual != null)
+            {
+                defaultColor = visual.color;
+            }
+        }
+
+        private void SetVisualColor(Color color)
+        {
+            if (visual != null)
+            {
+                visual.color = color;
+            }
+        }
 
         public void Initialize(
             HallManager hallManager,
             CustomerPatienceSettings patienceSettings,
             ItemBase dish,
             Vector3 waitSpot,
-            Vector3 exitSpot)
+            Vector3 exitSpot,
+            bool startsRowdy = false)
         {
             hall = hallManager;
             patience = patienceSettings;
@@ -49,6 +96,15 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             waitPosition = waitSpot;
             exitPosition = exitSpot;
             name = $"Customer_{dish?.DisplayName ?? "None"}";
+
+            if (startsRowdy)
+            {
+                remainingHits = EventSettings?.RowdyHits ?? 5;
+                name = $"손놈_{dish?.DisplayName ?? "None"}";
+                SetState(CustomerState.Rowdy);
+                return;
+            }
+
             SetState(CustomerState.WaitingForSeat);
         }
 
@@ -113,6 +169,33 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
                     break;
 
+                case CustomerState.Rowdy:
+                    // 입구 근처에서 난동. 제한시간 안에 제압하지 못하면 도망친다.
+                    MoveTowards(waitPosition);
+                    if (stateTimer >= ResolveSeconds())
+                    {
+                        Penalize("손놈이 제압당하지 않고 도망감");
+                        SetState(CustomerState.Leaving);
+                    }
+
+                    break;
+
+                case CustomerState.DineAndDash:
+                    // 빨갛게 변한 채로 잠깐 멈춰 있다가 튄다. 이 틈에 플레이어가 빗자루를 챙길 수 있다.
+                    if (stateTimer < TelegraphSeconds())
+                    {
+                        break;
+                    }
+
+                    // 계산 없이 입구로 직행. 나가기 전에 잡아야 한다.
+                    if (MoveTowards(exitPosition))
+                    {
+                        Penalize("먹튀 손님을 놓침");
+                        Despawn();
+                    }
+
+                    break;
+
                 case CustomerState.Leaving:
                     if (MoveTowards(exitPosition))
                     {
@@ -122,6 +205,11 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     break;
             }
         }
+
+        private static float ResolveSeconds() => EventSettings?.ResolveSeconds ?? FallbackResolveSeconds;
+
+        private static float TelegraphSeconds() =>
+            EventSettings?.DineAndDashTelegraphSeconds ?? FallbackTelegraphSeconds;
 
         public void Interact(GameObject interactor)
         {
@@ -138,7 +226,31 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                 case CustomerState.WaitingForFood:
                     TryReceiveDish(interactor);
                     break;
+
+                // 여기 오려면 빗자루를 들고 있어야 한다. InteractionRules가 이미 걸러준다.
+                case CustomerState.Rowdy:
+                case CustomerState.DineAndDash:
+                    HitWithBroom();
+                    break;
             }
+        }
+
+        private void HitWithBroom()
+        {
+            remainingHits--;
+            if (remainingHits > 0)
+            {
+                return;
+            }
+
+            // 먹튀는 잡히면 결국 계산하고 나간다. 손놈은 제압당해 그냥 쫓겨난다.
+            if (State == CustomerState.DineAndDash)
+            {
+                Pay();
+                SetVisualColor(defaultColor);
+            }
+
+            SetState(CustomerState.Leaving);
         }
 
         public bool TrySit(Seat targetSeat)
@@ -172,7 +284,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                 return;
             }
 
-            OrderId = hall.SubmitOrder(this, interactor);
+            OrderId = hall.CreateOrder(this, interactor);
             SetState(CustomerState.WaitingForFood);
         }
 
@@ -186,7 +298,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                 return;
             }
 
-            hall.CompleteOrder(OrderId);
+            hall.UpdateOrderStatus(OrderId, HallOrderStatus.Served);
             OrderId = Guid.Empty;
             eatDuration = patience.RandomEatSeconds;
             SetState(CustomerState.Eating);
@@ -211,19 +323,51 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                 seat = null;
             }
 
+            // 기획서 8번 먹튀: 일부 손님은 계산하지 않고 입구로 튄다.
+            HallEventSettings events = EventSettings;
+            if (events != null && events.RollDineAndDash())
+            {
+                remainingHits = events.DineAndDashHits;
+                name = $"먹튀_{orderedDish?.DisplayName ?? "None"}";
+                SetVisualColor(dineAndDashColor);
+                SetState(CustomerState.DineAndDash);
+                return;
+            }
+
+            // 기획서 6번: 전은 식사를 마친 시점에 계산한다.
+            // (서빙 시점에 받으면 먹튀가 성립하지 않는다 - 이미 낸 돈을 떼먹을 수 없으므로)
+            Pay();
             SetState(CustomerState.Leaving);
         }
 
-        private void LeaveAngry(string reason)
+        // 먹튀 이벤트가 붙으면 이 호출만 건너뛰고, 빗자루로 잡았을 때 다시 부르면 된다.
+        public bool Pay()
+        {
+            if (HasPaid || orderedDish == null || GameManager.Instance == null)
+            {
+                return false;
+            }
+
+            HasPaid = true;
+            GameManager.Instance.UpdateMoney(orderedDish.Price, $"{orderedDish.DisplayName} 판매");
+            return true;
+        }
+
+        private void Penalize(string reason)
         {
             if (ReputationManager.Instance != null)
             {
                 ReputationManager.Instance.Penalize(TimeoutPenalty, $"{name} - {reason}");
             }
+        }
+
+        private void LeaveAngry(string reason)
+        {
+            Penalize(reason);
 
             if (OrderId != Guid.Empty)
             {
-                hall.CancelOrder(OrderId, reason, gameObject);
+                hall.DeleteOrder(OrderId, reason, gameObject);
                 OrderId = Guid.Empty;
             }
 
