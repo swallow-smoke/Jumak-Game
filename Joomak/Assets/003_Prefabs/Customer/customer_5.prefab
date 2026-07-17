@@ -131,7 +131,7 @@ MonoBehaviour:
   title: "\uC190\uB2D8"
   actionHint: "E \uC0C1\uD638\uC791\uC6A9"
   worldOffset: {x: 0, y: 1.2, z: 0}
-  worldScale: 5
+  worldScale: 8
 --- !u!58 &-2731613998439156932
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -210,15 +210,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1203086802093020237, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
       propertyPath: m_LocalScale.x
-      value: 5
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 1203086802093020237, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
       propertyPath: m_LocalScale.y
-      value: 5
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 1203086802093020237, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
       propertyPath: m_LocalScale.z
-      value: 5
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 1203086802093020237, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
       propertyPath: m_LocalPosition.x

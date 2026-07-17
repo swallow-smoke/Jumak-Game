@@ -40,7 +40,6 @@ namespace _001_Scripts._001_Manager
         private readonly MessageSubscriptionBag subscriptions = new();
         private float spawnTimer;
         private int unlockedTableCount;
-        private RunState runState;
         private int nextCustomerPrefabIndex;
 
         // 주문서 UI(OrderPanel)가 새 주문이 들어올 때마다 이걸로 알아챈다.
@@ -53,11 +52,7 @@ namespace _001_Scripts._001_Manager
             subscriptions.Add(HallMessagePort.OnDishReady(OnDishReady));
             subscriptions.Add(HallMessagePort.OnOrderStatusChanged(OnOrderStatusChanged));
 
-            runState = RunState.Instance;
-            if (runState != null)
-            {
-                runState.Purchased += OnUpgradePurchased;
-            }
+            UpgradeApi.UpgradePurchased += OnUpgradePurchased;
 
             SetUnlockedTableCount(startingTableCount + PurchasedTableCount());
 
@@ -105,17 +100,12 @@ namespace _001_Scripts._001_Manager
 
         protected override void OnDestroy()
         {
-            if (runState != null)
-            {
-                runState.Purchased -= OnUpgradePurchased;
-            }
-
-            runState = null;
+            UpgradeApi.UpgradePurchased -= OnUpgradePurchased;
             subscriptions.Dispose();
             base.OnDestroy();
         }
 
-        private int PurchasedTableCount() => runState != null ? runState.GetLevel(UpgradeId.TableAdd) : 0;
+        private static int PurchasedTableCount() => UpgradeApi.AddedTableCount;
 
         private void OnUpgradePurchased(UpgradeId id, int _)
         {

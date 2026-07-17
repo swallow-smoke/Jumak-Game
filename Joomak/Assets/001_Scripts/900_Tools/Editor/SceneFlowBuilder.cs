@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using _001_Scripts._000_Core;
+using _001_Scripts._001_Manager;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
@@ -19,6 +20,8 @@ namespace _001_Scripts._900_Tools.Editor
         private const string UpgradeScenePath = "Assets/000_Scenes/Upgrade.unity";
         private const string RegularFontPath = "Assets/002_Resources/005_Fonts/CookieRun Regular.otf";
         private const string BoldFontPath = "Assets/002_Resources/005_Fonts/CookieRun Bold.otf";
+        private const string TitleBackgroundPath = "Assets/002_Resources/000_Images/TiTle.png";
+        private const string LoadingBackgroundPath = "Assets/002_Resources/000_Images/loading.png";
 
         private static readonly Color Ink = Hex("3D271D");
         private static readonly Color Cream = Hex("FFF6DF");
@@ -65,29 +68,35 @@ namespace _001_Scripts._900_Tools.Editor
             RemoveExistingFlowObjects(scene);
 
             SceneLoader loader = new GameObject("SceneLoader").AddComponent<SceneLoader>();
-            Canvas canvas = CreateCanvas("TitleCanvas", Hex("E8C98E"));
+            Canvas canvas = CreateCanvas("TitleCanvas", DarkBrown);
+            Image background = canvas.transform.Find("Background").GetComponent<Image>();
+            background.sprite = AssetDatabase.LoadAllAssetsAtPath(TitleBackgroundPath).OfType<Sprite>().FirstOrDefault();
+            background.color = Color.white;
+            background.type = Image.Type.Simple;
 
-            Image panel = CreateImage(canvas.transform, "TitlePanel", Cream);
-            SetRect(panel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.one * 0.5f,
-                Vector2.zero, new Vector2(660f, 570f));
-            panel.gameObject.AddComponent<Shadow>().effectColor = new Color(0.1f, 0.05f, 0.02f, 0.45f);
+            Image shade = CreateImage(canvas.transform, "BottomShade", new Color(0.08f, 0.035f, 0.015f, 0.14f));
+            Stretch(shade.rectTransform);
 
-            Text title = CreateText(panel.transform, "GameTitle", "주  막", 88, Brown, bold, FontStyle.Bold);
-            SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                new Vector2(0f, -95f), new Vector2(560f, 120f));
+            Image menuBar = CreateImage(canvas.transform, "MenuBar", new Color(0.12f, 0.055f, 0.025f, 0.9f));
+            SetRect(menuBar.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(0f, 32f), new Vector2(1120f, 126f));
+            menuBar.gameObject.AddComponent<Outline>().effectColor = new Color32(215, 154, 59, 210);
+            menuBar.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.65f);
 
-            Text subtitle = CreateText(panel.transform, "Subtitle", "오늘도 따뜻한 한 상을 준비합니다", 27, Ink, regular);
-            SetRect(subtitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                new Vector2(0f, -188f), new Vector2(560f, 50f));
-
-            Button startButton = CreateButton(panel.transform, "StartButton", "영업 시작", bold, Gold, DarkBrown);
+            Button startButton = CreateButton(menuBar.transform, "NewGameButton", "새 게임", bold, Hex("E7BE70"), DarkBrown);
             SetRect(startButton.GetComponent<RectTransform>(), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.one * 0.5f,
-                new Vector2(0f, -55f), new Vector2(390f, 82f));
+                new Vector2(-350f, 0f), new Vector2(292f, 76f));
             UnityEventTools.AddPersistentListener(startButton.onClick, loader.LoadGame);
 
-            Button quitButton = CreateButton(panel.transform, "QuitButton", "게임 종료", regular, Brown, Cream);
+            Button continueButton = CreateButton(menuBar.transform, "ContinueButton", "이어하기", bold, Hex("B26F37"), Cream);
+            SetRect(continueButton.GetComponent<RectTransform>(), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.one * 0.5f,
+                Vector2.zero, new Vector2(292f, 76f));
+            UnityEventTools.AddPersistentListener(continueButton.onClick, loader.ContinueGame);
+            continueButton.interactable = SaveGameManager.HasSave;
+
+            Button quitButton = CreateButton(menuBar.transform, "QuitButton", "게임 종료", regular, Hex("5B2D1E"), Cream);
             SetRect(quitButton.GetComponent<RectTransform>(), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.one * 0.5f,
-                new Vector2(0f, -160f), new Vector2(390f, 68f));
+                new Vector2(350f, 0f), new Vector2(292f, 76f));
             UnityEventTools.AddPersistentListener(quitButton.onClick, loader.QuitGame);
 
             EnsureEventSystem();
@@ -102,27 +111,42 @@ namespace _001_Scripts._900_Tools.Editor
 
             SceneLoader loader = new GameObject("SceneLoader").AddComponent<SceneLoader>();
             Canvas canvas = CreateCanvas("LoadingCanvas", DarkBrown);
+            Image background = canvas.transform.Find("Background").GetComponent<Image>();
+            background.sprite = AssetDatabase.LoadAllAssetsAtPath(LoadingBackgroundPath).OfType<Sprite>().FirstOrDefault();
+            background.color = Color.white;
+            background.type = Image.Type.Simple;
 
-            Text title = CreateText(canvas.transform, "LoadingTitle", "주막을 준비하는 중...", 48, Cream, bold, FontStyle.Bold);
-            SetRect(title.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.one * 0.5f,
-                new Vector2(0f, 105f), new Vector2(760f, 80f));
+            Image shade = CreateImage(canvas.transform, "LoadingShade", new Color(0.04f, 0.015f, 0.005f, 0.12f));
+            Stretch(shade.rectTransform);
 
-            Slider slider = CreateProgressBar(canvas.transform);
-            SetRect(slider.GetComponent<RectTransform>(), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.one * 0.5f,
-                Vector2.zero, new Vector2(760f, 42f));
+            Image panel = CreateImage(canvas.transform, "LoadingPanel", new Color(0.1f, 0.04f, 0.015f, 0.9f));
+            SetRect(panel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(0f, 34f), new Vector2(1040f, 210f));
+            panel.gameObject.AddComponent<Outline>().effectColor = new Color32(215, 154, 59, 210);
+            panel.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.65f);
 
-            Text percent = CreateText(canvas.transform, "ProgressText", "0%", 30, Cream, regular, FontStyle.Bold);
-            SetRect(percent.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.one * 0.5f,
-                new Vector2(0f, -70f), new Vector2(300f, 55f));
+            Text title = CreateText(panel.transform, "LoadingTitle", "주막을 준비하는 중...", 36,
+                new Color32(255, 236, 190, 255), bold, FontStyle.Bold);
+            SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(0f, -45f), new Vector2(760f, 52f));
 
-            Text hint = CreateText(canvas.transform, "LoadingHint", "맛있는 음식과 따뜻한 자리를 마련하고 있습니다", 23,
-                new Color(1f, 0.84f, 0.55f, 1f), regular);
-            SetRect(hint.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.one * 0.5f,
-                new Vector2(0f, -145f), new Vector2(850f, 50f));
+            Slider slider = CreateProgressBar(panel.transform);
+            SetRect(slider.GetComponent<RectTransform>(), Vector2.one * 0.5f, Vector2.one * 0.5f, Vector2.one * 0.5f,
+                new Vector2(-42f, -4f), new Vector2(820f, 34f));
+
+            Text percent = CreateText(panel.transform, "ProgressText", "0%", 25, Cream, regular, FontStyle.Bold);
+            SetRect(percent.rectTransform, Vector2.one * 0.5f, Vector2.one * 0.5f, Vector2.one * 0.5f,
+                new Vector2(425f, -4f), new Vector2(100f, 44f));
+
+            Text hint = CreateText(panel.transform, "LoadingHint", "맛있는 음식과 따뜻한 자리를 마련하고 있습니다", 20,
+                new Color32(230, 190, 120, 255), regular);
+            SetRect(hint.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(0f, 22f), new Vector2(850f, 38f));
 
             SerializedObject loaderData = new(loader);
             loaderData.FindProperty("progressBar").objectReferenceValue = slider;
             loaderData.FindProperty("progressText").objectReferenceValue = percent;
+            loaderData.FindProperty("minimumDisplaySeconds").floatValue = 1.5f;
             loaderData.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.MarkSceneDirty(scene);

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using _001_Scripts._001_Manager;
 using _001_Scripts._002_Controller;
 using _001_Scripts._003_Object._000_Structure.Interface;
 using _001_Scripts._003_Object._000_Structure.Inventory;
@@ -56,6 +57,14 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
         [Tooltip("조리 중일 때(State.Cooking) 재생되는 파티클. 힘쓰는 느낌용.")]
         [SerializeField] private ParticleSystem cookingParticle;
 
+        [Header("Audio")]
+        [Tooltip("조리대에서 레시피 선택, 재료 투입, 조리 가속, 완성품 수령에 성공했을 때 재생합니다.")]
+        [SerializeField] private AudioClip interactionSfx;
+        [Tooltip("실제로 조리 중인 동안 반복 재생합니다.")]
+        [SerializeField] private AudioClip cookingLoopSfx;
+        [SerializeField, Range(0f, 1f)] private float cookingLoopVolume = 0.75f;
+        [SerializeField] private AudioSource cookingAudioSource;
+
         private State state = State.Idle;
         private RecipeData selectedRecipe;
         private int selectingIndex;
@@ -75,6 +84,15 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
         protected override void Awake()
         {
             base.Awake();
+
+            if (cookingAudioSource == null)
+            {
+                cookingAudioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            cookingAudioSource.playOnAwake = false;
+            cookingAudioSource.loop = true;
+            cookingAudioSource.spatialBlend = 0f;
 
             if (recipeBubbleRoot != null)
             {
@@ -119,10 +137,16 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
 
             UpdateBubble();
             UpdateCookingParticle();
+            UpdateCookingAudio();
         }
 
         private void OnDisable()
         {
+            if (cookingAudioSource != null)
+            {
+                cookingAudioSource.Stop();
+            }
+
             if (state == State.Selecting)
             {
                 selectingInteractor = null;
@@ -151,6 +175,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
 
                 case State.Cooking:
                     ReduceCookTime();
+                    PlayInteractionSfx();
                     break;
 
                 case State.Selecting:
@@ -184,6 +209,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             selectingIndex = Mathf.Max(0, selectedRecipe != null ? recipes.IndexOf(selectedRecipe) : 0);
             selectingInteractor = interactor;
             state = State.Selecting;
+            PlayInteractionSfx();
         }
 
         public bool CanControlSelection(GameObject interactor) =>
@@ -199,6 +225,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             selectedRecipe = recipes[selectingIndex];
             selectingInteractor = null;
             state = State.Idle;
+            PlayInteractionSfx();
         }
 
         public void CancelSelection(GameObject interactor)
@@ -222,7 +249,13 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
                 return;
             }
 
-            carrier.TryConsumeHeldItem(heldItem);
+            if (!carrier.TryConsumeHeldItem(heldItem))
+            {
+                ingredientInventory.TryRemove(heldItem.Item, 1);
+                return;
+            }
+
+            PlayInteractionSfx();
 
             if (selectedRecipe.TryConsumeIngredients(ingredientInventory))
             {
@@ -251,36 +284,12 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
 
         private static float CookTimeMultiplier
         {
-            get
-            {
-                RunState runState = RunState.Instance;
-                if (runState == null)
-                {
-                    return 1f;
-                }
-
-                int level = runState.GetLevel(UpgradeId.CookTime1)
-                            + runState.GetLevel(UpgradeId.CookTime2)
-                            + runState.GetLevel(UpgradeId.CookTime3);
-                return Mathf.Max(0.7f, 1f - Mathf.Clamp(level, 0, 3) * 0.1f);
-            }
+            get => UpgradeApi.CookTimeMultiplier;
         }
 
         private static float FailureDelayMultiplier
         {
-            get
-            {
-                RunState runState = RunState.Instance;
-                if (runState == null)
-                {
-                    return 1f;
-                }
-
-                int level = runState.GetLevel(UpgradeId.FailureDelay1)
-                            + runState.GetLevel(UpgradeId.FailureDelay2)
-                            + runState.GetLevel(UpgradeId.FailureDelay3);
-                return 1f + Mathf.Clamp(level, 0, 3) * 0.1f;
-            }
+            get => UpgradeApi.FailureDelayMultiplier;
         }
 
         private void CompleteCooking()
@@ -328,6 +337,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             outputInventory.TryRemove(stack.Item, 1);
             outputIsFailed = false;
             state = State.Idle;
+            PlayInteractionSfx();
         }
 
         // 선택 중이면 지금 스크롤로 보고 있는 후보를, 아니면 확정된 레시피를 보여준다.
@@ -510,6 +520,44 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             {
                 cookingParticle.Stop();
             }
+        }
+
+        private void UpdateCookingAudio()
+        {
+            if (cookingAudioSource == null)
+            {
+                return;
+            }
+
+            bool shouldPlay = state == State.Cooking && cookingLoopSfx != null;
+            if (!shouldPlay)
+            {
+                if (cookingAudioSource.isPlaying)
+                {
+                    cookingAudioSource.Stop();
+                }
+
+                return;
+            }
+
+            cookingAudioSource.volume = (AudioManager.Instance != null ? AudioManager.Instance.SfxVolume : 1f)
+                                        * cookingLoopVolume;
+
+            if (cookingAudioSource.clip != cookingLoopSfx)
+            {
+                cookingAudioSource.Stop();
+                cookingAudioSource.clip = cookingLoopSfx;
+            }
+
+            if (!cookingAudioSource.isPlaying)
+            {
+                cookingAudioSource.Play();
+            }
+        }
+
+        private void PlayInteractionSfx()
+        {
+            AudioManager.Instance?.PlaySfx(interactionSfx);
         }
 
         private void OnValidate()

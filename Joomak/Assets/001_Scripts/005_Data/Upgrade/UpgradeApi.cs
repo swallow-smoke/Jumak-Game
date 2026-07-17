@@ -77,6 +77,54 @@ namespace _001_Scripts._005_Data.Upgrade
             ReputationChanged?.Invoke(reputation);
         }
 
+        public static List<_001_Scripts._001_Manager.UpgradeLevelSave> CaptureUpgradeLevels()
+        {
+            EnsureInitialized();
+            List<_001_Scripts._001_Manager.UpgradeLevelSave> result = new();
+            foreach (KeyValuePair<UpgradeId, int> entry in Levels)
+            {
+                if (entry.Value <= 0)
+                {
+                    continue;
+                }
+
+                result.Add(new _001_Scripts._001_Manager.UpgradeLevelSave
+                {
+                    upgradeId = entry.Key.ToString(),
+                    level = entry.Value
+                });
+            }
+
+            return result;
+        }
+
+        public static void RestoreRun(
+            int savedMoney,
+            int savedReputation,
+            int savedMaxReputation,
+            IReadOnlyList<_001_Scripts._001_Manager.UpgradeLevelSave> savedLevels)
+        {
+            initialized = true;
+            money = Mathf.Max(0, savedMoney);
+            maxReputation = Mathf.Max(1, savedMaxReputation);
+            reputation = Mathf.Clamp(savedReputation, 0, maxReputation);
+            Levels.Clear();
+
+            if (savedLevels != null)
+            {
+                foreach (_001_Scripts._001_Manager.UpgradeLevelSave entry in savedLevels)
+                {
+                    if (entry != null && Enum.TryParse(entry.upgradeId, out UpgradeId id) && Definitions.TryGetValue(id, out UpgradeDefinition definition))
+                    {
+                        Levels[id] = Mathf.Clamp(entry.level, 0, definition.MaxPurchases);
+                    }
+                }
+            }
+
+            MoneyChanged?.Invoke(money);
+            ReputationChanged?.Invoke(reputation);
+        }
+
         public static bool TryGetDefinition(UpgradeId id, out UpgradeDefinition definition)
         {
             return Definitions.TryGetValue(id, out definition);

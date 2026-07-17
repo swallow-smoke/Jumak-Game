@@ -51,6 +51,10 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         [SerializeField] private Color dineAndDashColor = new(0.9f, 0.15f, 0.15f);
         [SerializeField] private Color rowdyColor = new(0.55f, 0.15f, 0.7f);
 
+        [Header("Order Indicator Audio")]
+        [SerializeField] private AudioClip questionSfx;
+        [SerializeField] private AudioClip exclamationSfx;
+
         private Color defaultColor;
         private HallManager hall;
         private CustomerPatienceSettings patience;
@@ -102,6 +106,8 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             {
                 orderIndicator = gameObject.AddComponent<CustomerOrderIndicator>();
             }
+
+            orderIndicator.ConfigureAudio(questionSfx, exclamationSfx);
 
             // 인스펙터에서 안 물려줬으면 Visual 자식을 찾는다.
             // 하이라이트 외곽선은 나중에 붙으므로 이 시점엔 본체 스프라이트만 있다.
@@ -440,8 +446,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
             HasPaid = true;
             GameManager.Instance.UpdateMoney(orderedDish.Price, $"{orderedDish.DisplayName} 판매");
-            if (RunState.Instance != null &&
-                RunState.Instance.GetLevel(UpgradeId.PremiumDish) > 0 &&
+            if (UpgradeApi.SaleReputationBonus > 0 &&
                 ReputationManager.Instance != null)
             {
                 ReputationManager.Instance.Restore(1);

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using _001_Scripts._001_Manager;
 using _001_Scripts._003_Object._000_Structure.Interface;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
@@ -11,6 +12,9 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
     // 각각 그대로 보내진다(박스마다 최대 재고 넘는 양은 그 박스에서만 잘려나감).
     public sealed class BundleUnpackingStation : BaseStructure
     {
+        [Header("Audio")]
+        [SerializeField] private AudioClip unpackSfx;
+
         public override void Interact(GameObject interactor)
         {
             if (!interactor.TryGetComponent(out ISingleItemCarrier carrier) ||
@@ -20,8 +24,14 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
                 return;
             }
 
-            Distribute(bundle.BundleData.GetUnpackedItems());
-            carrier.TryConsumeHeldItem(bundle);
+            ItemBundleData bundleData = bundle.BundleData;
+            if (!carrier.TryConsumeHeldItem(bundle))
+            {
+                return;
+            }
+
+            Distribute(bundleData.GetUnpackedItems());
+            AudioManager.Instance?.PlaySfx(unpackSfx);
         }
 
         private static void Distribute(IEnumerable<ItemAmount> unpackedItems)

@@ -52,7 +52,6 @@ namespace _001_Scripts._002_Controller
         private InteractionOutline2D focusedOutline;
         private InteractionPromptBubble focusedPrompt;
         private ISelectionInputCapture capturedSelection;
-        private RunState runState;
         private float upgradeMoveMultiplier = 1f;
         private Vector2 dashDirection;
         private float dashRemaining;
@@ -89,11 +88,7 @@ namespace _001_Scripts._002_Controller
 
         private void OnEnable()
         {
-            runState = RunState.Instance;
-            if (runState != null)
-            {
-                runState.Purchased += OnUpgradePurchased;
-            }
+            UpgradeApi.UpgradePurchased += OnUpgradePurchased;
 
             RefreshCommonUpgrades();
         }
@@ -289,12 +284,7 @@ namespace _001_Scripts._002_Controller
 
         private void OnDisable()
         {
-            if (runState != null)
-            {
-                runState.Purchased -= OnUpgradePurchased;
-            }
-
-            runState = null;
+            UpgradeApi.UpgradePurchased -= OnUpgradePurchased;
             capturedSelection?.CancelSelection(gameObject);
             ReleaseSelectionInput();
             moveInput = Vector2.zero;
@@ -304,7 +294,7 @@ namespace _001_Scripts._002_Controller
 
         private void TryStartDash()
         {
-            if (runState == null || runState.GetLevel(UpgradeId.Dash) <= 0 || dashCooldownRemaining > 0f)
+            if (!UpgradeApi.DashUnlocked || dashCooldownRemaining > 0f)
             {
                 return;
             }
@@ -318,16 +308,7 @@ namespace _001_Scripts._002_Controller
 
         private void RefreshCommonUpgrades()
         {
-            if (runState == null)
-            {
-                upgradeMoveMultiplier = 1f;
-                return;
-            }
-
-            int speedLevels = runState.GetLevel(UpgradeId.MoveSpeed1)
-                              + runState.GetLevel(UpgradeId.MoveSpeed2)
-                              + runState.GetLevel(UpgradeId.MoveSpeed3);
-            upgradeMoveMultiplier = 1f + Mathf.Clamp(speedLevels, 0, 3) * 0.1f;
+            upgradeMoveMultiplier = UpgradeApi.MoveSpeedMultiplier;
         }
 
         private Vector2 ReadMoveInput(Keyboard keyboard)

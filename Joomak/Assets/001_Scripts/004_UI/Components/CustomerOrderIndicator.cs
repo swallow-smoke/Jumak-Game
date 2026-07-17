@@ -1,4 +1,5 @@
 using _001_Scripts._003_Object._001_Entity.NPC;
+using _001_Scripts._001_Manager;
 using UnityEngine;
 
 namespace _001_Scripts._004_UI.Components
@@ -15,6 +16,8 @@ namespace _001_Scripts._004_UI.Components
         private GameObject indicatorRoot;
         private UnityEngine.UI.Text symbolText;
         private CustomerState visibleState = (CustomerState)(-1);
+        private AudioClip questionSfx;
+        private AudioClip exclamationSfx;
 
         private void Awake()
         {
@@ -42,7 +45,7 @@ namespace _001_Scripts._004_UI.Components
 
         public void SetCustomerState(CustomerState state)
         {
-            if (indicatorRoot == null || visibleState == state)
+            if (visibleState == state)
             {
                 return;
             }
@@ -51,17 +54,36 @@ namespace _001_Scripts._004_UI.Components
             switch (state)
             {
                 case CustomerState.Deciding:
-                    Show("?", ThinkingColor);
+                    if (indicatorRoot != null)
+                    {
+                        Show("?", ThinkingColor);
+                    }
+
+                    AudioManager.Instance?.PlaySfx(questionSfx);
                     break;
 
                 case CustomerState.ReadyToOrder:
-                    Show("!", ReadyColor);
+                    if (indicatorRoot != null)
+                    {
+                        Show("!", ReadyColor);
+                    }
+
+                    AudioManager.Instance?.PlaySfx(exclamationSfx);
                     break;
 
                 default:
-                    indicatorRoot.SetActive(false);
+                    if (indicatorRoot != null)
+                    {
+                        indicatorRoot.SetActive(false);
+                    }
                     break;
             }
+        }
+
+        public void ConfigureAudio(AudioClip questionClip, AudioClip exclamationClip)
+        {
+            questionSfx = questionClip;
+            exclamationSfx = exclamationClip;
         }
 
         private void Show(string symbol, Color color)

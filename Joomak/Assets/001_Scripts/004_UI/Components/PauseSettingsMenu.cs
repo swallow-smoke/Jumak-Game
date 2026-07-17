@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using _001_Scripts._000_Core;
 using _001_Scripts._001_Manager;
 using _001_Scripts._002_Controller;
 using UnityEngine;
@@ -201,6 +202,7 @@ namespace _001_Scripts._004_UI.Components
         private void SetMasterVolume(float value)
         {
             PlayerPrefs.SetFloat(MasterVolumeKey, value);
+            PlayerPrefs.Save();
             AudioListener.volume = value;
             AudioManager.Instance?.SetMasterVolume(value);
             RefreshVolumeLabels();
@@ -209,6 +211,7 @@ namespace _001_Scripts._004_UI.Components
         private void SetBgmVolume(float value)
         {
             PlayerPrefs.SetFloat(BgmVolumeKey, value);
+            PlayerPrefs.Save();
             AudioManager.Instance?.SetBgmVolume(value);
             RefreshVolumeLabels();
         }
@@ -216,6 +219,7 @@ namespace _001_Scripts._004_UI.Components
         private void SetSfxVolume(float value)
         {
             PlayerPrefs.SetFloat(SfxVolumeKey, value);
+            PlayerPrefs.Save();
             AudioManager.Instance?.SetSfxVolume(value);
             RefreshVolumeLabels();
         }
@@ -271,12 +275,19 @@ namespace _001_Scripts._004_UI.Components
 
         private void RestartScene()
         {
+            DayCycleManager.SaveCurrentProgress("InGame");
+            if (SaveGameManager.TryLoad(out SaveGameData data))
+            {
+                SaveGameManager.RestoreGameState(data);
+            }
+
             RestoreTimeScale();
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            SceneLoader.LoadThroughLoading("InGame");
         }
 
         private void QuitGame()
         {
+            DayCycleManager.SaveCurrentProgress(SceneManager.GetActiveScene().name);
             PlayerPrefs.Save();
             RestoreTimeScale();
 #if UNITY_EDITOR

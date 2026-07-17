@@ -22,6 +22,19 @@ namespace _001_Scripts._001_Manager
         public float BgmVolume => bgmVolume;
         public float SfxVolume => sfxVolume;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void Bootstrap()
+        {
+            if (Instance != null)
+            {
+                return;
+            }
+
+            GameObject root = new("AudioManager");
+            DontDestroyOnLoad(root);
+            root.AddComponent<AudioManager>();
+        }
+
         public override void Initialize()
         {
             if (bgmSource == null)
@@ -43,6 +56,7 @@ namespace _001_Scripts._001_Manager
             masterVolume = PlayerPrefs.GetFloat(MasterVolumeKey, 1f);
             bgmVolume = PlayerPrefs.GetFloat(BgmVolumeKey, 1f);
             sfxVolume = PlayerPrefs.GetFloat(SfxVolumeKey, 1f);
+            AudioListener.volume = masterVolume;
             ApplyBgmVolume();
         }
 
@@ -77,7 +91,7 @@ namespace _001_Scripts._001_Manager
             AudioSource source = sfxPool[nextSfxIndex];
             nextSfxIndex = (nextSfxIndex + 1) % sfxPool.Length;
 
-            source.volume = Mathf.Clamp01(masterVolume * sfxVolume * volumeScale);
+            source.volume = Mathf.Clamp01(sfxVolume * volumeScale);
             source.PlayOneShot(clip);
         }
 
@@ -85,7 +99,7 @@ namespace _001_Scripts._001_Manager
         {
             masterVolume = Mathf.Clamp01(value);
             PlayerPrefs.SetFloat(MasterVolumeKey, masterVolume);
-            ApplyBgmVolume();
+            AudioListener.volume = masterVolume;
         }
 
         public void SetBgmVolume(float value)
@@ -105,7 +119,7 @@ namespace _001_Scripts._001_Manager
         {
             if (bgmSource != null)
             {
-                bgmSource.volume = Mathf.Clamp01(masterVolume * bgmVolume);
+                bgmSource.volume = bgmVolume;
             }
         }
     }

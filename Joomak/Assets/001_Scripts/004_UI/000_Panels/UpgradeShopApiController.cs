@@ -1,4 +1,5 @@
 using System;
+using _001_Scripts._001_Manager;
 using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 using UnityEngine.UI;
@@ -277,6 +278,10 @@ namespace _001_Scripts._004_UI._000_Panels
 
         private void OnMoneyChanged(int _) => Refresh();
         private void OnReputationChanged(int _) => Refresh();
-        private void OnUpgradePurchased(UpgradeId _, int __) => Refresh();
+        private void OnUpgradePurchased(UpgradeId _, int __)
+        {
+            Refresh();
+            DayCycleManager.SaveCurrentProgress("Upgrade");
+        }
     }
 }

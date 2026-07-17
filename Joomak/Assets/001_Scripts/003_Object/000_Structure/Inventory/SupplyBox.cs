@@ -1,3 +1,4 @@
+using _001_Scripts._001_Manager;
 using _001_Scripts._003_Object._000_Structure.Interface;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
@@ -16,6 +17,12 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
         [SerializeField, Min(1)] private int maxStack = 10;
         [SerializeField] private SpriteRenderer itemDisplay;
         [SerializeField, Min(0)] private int storedCount;
+
+        [Header("Audio")]
+        [Tooltip("재료를 보급함에 넣었을 때 재생합니다.")]
+        [SerializeField] private AudioClip storeSfx;
+        [Tooltip("재료를 꺼낼 때 재생합니다. jar 프리팹에는 식혜를 뜨는 소리를 지정하면 됩니다.")]
+        [SerializeField] private AudioClip takeSfx;
 
         public ItemBase SuppliedItem => suppliedItem;
         public int MaxStack => maxStack;
@@ -54,8 +61,11 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
                 return;
             }
 
-            storedCount++;
-            carrier.TryConsumeHeldItem(heldItem);
+            if (carrier.TryConsumeHeldItem(heldItem))
+            {
+                storedCount++;
+                AudioManager.Instance?.PlaySfx(storeSfx);
+            }
         }
 
         private void TryTakeOne(ISingleItemCarrier carrier)
@@ -68,6 +78,7 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
             if (carrier.TryCarry(worldItem))
             {
                 storedCount--;
+                AudioManager.Instance?.PlaySfx(takeSfx);
                 return;
             }
 

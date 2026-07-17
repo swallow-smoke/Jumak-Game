@@ -1,4 +1,7 @@
 using System.Collections;
+using System.Linq;
+using _001_Scripts._001_Manager;
+using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -19,7 +22,7 @@ namespace _001_Scripts._000_Core
         [Header("Loading UI")]
         [SerializeField] private Slider progressBar;
         [SerializeField] private Text progressText;
-        [SerializeField, Min(0f)] private float minimumDisplaySeconds = 0.6f;
+        [SerializeField, Min(0f)] private float minimumDisplaySeconds = 1.5f;
 
         private bool isLoading;
 
@@ -53,7 +56,34 @@ namespace _001_Scripts._000_Core
 
         public void LoadGame()
         {
+            SaveGameManager.DeleteSave();
+            DayCycleManager.ResetRun();
+            UpgradeApi.ResetRun();
+            RunState.Instance?.ResetRun();
             LoadScene(DefaultGameSceneName);
+        }
+
+        public void ContinueGame()
+        {
+            if (!SaveGameManager.TryLoad(out SaveGameData data))
+            {
+                return;
+            }
+
+            SaveGameManager.RestoreGameState(data);
+            string targetScene = data.sceneName == "Upgrade" ? "Upgrade" : DefaultGameSceneName;
+            LoadScene(targetScene);
+        }
+
+        public static void LoadThroughLoading(string sceneName)
+        {
+            SceneLoader loader = FindAnyObjectByType<SceneLoader>();
+            if (loader == null)
+            {
+                loader = new GameObject("SceneLoader").AddComponent<SceneLoader>();
+            }
+
+            loader.LoadScene(sceneName);
         }
 
         public void LoadScene(string sceneName)
@@ -119,10 +149,14 @@ namespace _001_Scripts._000_Core
             {
                 // Unity 비동기 로드는 활성화 직전 상태를 0.9로 보고하므로 UI에서는 0~100%로 환산한다.
                 float normalized = Mathf.Clamp01(operation.progress / 0.9f);
-                SetProgress(normalized);
+                float elapsed = Time.realtimeSinceStartup - startedAt;
+                float displayCap = minimumDisplaySeconds <= 0f
+                    ? 1f
+                    : Mathf.Clamp01(elapsed / minimumDisplaySeconds);
+                SetProgress(Mathf.Min(normalized, displayCap));
 
                 bool loaded = operation.progress >= 0.9f;
-                bool shownLongEnough = Time.realtimeSinceStartup - startedAt >= minimumDisplaySeconds;
+                bool shownLongEnough = elapsed >= minimumDisplaySeconds;
                 if (loaded && shownLongEnough)
                 {
                     SetProgress(1f);
@@ -151,31 +185,42 @@ namespace _001_Scripts._000_Core
         private void BuildRuntimeTitleUi()
         {
             Font font = CreateKoreanFont();
-            Canvas canvas = CreateCanvas("TitleCanvas", new Color32(232, 201, 142, 255));
-            Image panel = CreateImage(canvas.transform, "TitlePanel", new Color32(255, 246, 223, 255));
-            SetRect(panel.rectTransform, Vector2.one * 0.5f, Vector2.one * 0.5f, Vector2.one * 0.5f,
-                Vector2.zero, new Vector2(660f, 570f));
-            panel.gameObject.AddComponent<Shadow>().effectColor = new Color(0.1f, 0.05f, 0.02f, 0.45f);
+            Canvas canvas = CreateCanvas("TitleCanvas", new Color32(39, 24, 17, 255));
+            Image background = canvas.transform.Find("Background")?.GetComponent<Image>();
+            Sprite titleSprite = Resources.LoadAll<Sprite>("000_Images/TiTle").FirstOrDefault();
+            if (background != null && titleSprite != null)
+            {
+                background.sprite = titleSprite;
+                background.color = Color.white;
+                background.type = Image.Type.Simple;
+            }
 
-            Text title = CreateText(panel.transform, "GameTitle", "주  막", 88, new Color32(108, 53, 34, 255), font, FontStyle.Bold);
-            SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                new Vector2(0f, -95f), new Vector2(560f, 120f));
+            Image shade = CreateImage(canvas.transform, "BottomShade", new Color(0.08f, 0.035f, 0.015f, 0.14f));
+            Stretch(shade.rectTransform);
 
-            Text subtitle = CreateText(panel.transform, "Subtitle", "오늘도 따뜻한 한 상을 준비합니다", 27,
-                new Color32(61, 39, 29, 255), font);
-            SetRect(subtitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                new Vector2(0f, -188f), new Vector2(560f, 50f));
+            Image menuBar = CreateImage(canvas.transform, "MenuBar", new Color(0.12f, 0.055f, 0.025f, 0.9f));
+            SetRect(menuBar.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(0f, 32f), new Vector2(1120f, 126f));
+            menuBar.gameObject.AddComponent<Outline>().effectColor = new Color32(215, 154, 59, 210);
+            menuBar.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.65f);
 
-            Button startButton = CreateButton(panel.transform, "StartButton", "영업 시작", font,
-                new Color32(215, 154, 59, 255), new Color32(39, 24, 17, 255));
+            Button startButton = CreateButton(menuBar.transform, "NewGameButton", "새 게임", font,
+                new Color32(231, 190, 112, 255), new Color32(56, 28, 17, 255));
             SetRect(startButton.GetComponent<RectTransform>(), Vector2.one * 0.5f, Vector2.one * 0.5f, Vector2.one * 0.5f,
-                new Vector2(0f, -55f), new Vector2(390f, 82f));
+                new Vector2(-350f, 0f), new Vector2(292f, 76f));
             startButton.onClick.AddListener(LoadGame);
 
-            Button quitButton = CreateButton(panel.transform, "QuitButton", "게임 종료", font,
-                new Color32(108, 53, 34, 255), new Color32(255, 246, 223, 255));
+            Button continueButton = CreateButton(menuBar.transform, "ContinueButton", "이어하기", font,
+                new Color32(178, 111, 55, 255), new Color32(255, 246, 223, 255));
+            SetRect(continueButton.GetComponent<RectTransform>(), Vector2.one * 0.5f, Vector2.one * 0.5f, Vector2.one * 0.5f,
+                Vector2.zero, new Vector2(292f, 76f));
+            continueButton.onClick.AddListener(ContinueGame);
+            continueButton.interactable = SaveGameManager.HasSave;
+
+            Button quitButton = CreateButton(menuBar.transform, "QuitButton", "게임 종료", font,
+                new Color32(91, 45, 30, 255), new Color32(255, 246, 223, 255));
             SetRect(quitButton.GetComponent<RectTransform>(), Vector2.one * 0.5f, Vector2.one * 0.5f, Vector2.one * 0.5f,
-                new Vector2(0f, -160f), new Vector2(390f, 68f));
+                new Vector2(350f, 0f), new Vector2(292f, 76f));
             quitButton.onClick.AddListener(QuitGame);
 
             EnsureEventSystem();
@@ -185,25 +230,42 @@ namespace _001_Scripts._000_Core
         {
             Font font = CreateKoreanFont();
             Canvas canvas = CreateCanvas("LoadingCanvas", new Color32(39, 24, 17, 255));
+            Image background = canvas.transform.Find("Background")?.GetComponent<Image>();
+            Sprite loadingSprite = Resources.LoadAll<Sprite>("000_Images/loading").FirstOrDefault();
+            if (background != null && loadingSprite != null)
+            {
+                background.sprite = loadingSprite;
+                background.color = Color.white;
+                background.type = Image.Type.Simple;
+            }
 
-            Text title = CreateText(canvas.transform, "LoadingTitle", "주막을 준비하는 중...", 48,
-                new Color32(255, 246, 223, 255), font, FontStyle.Bold);
-            SetRect(title.rectTransform, Vector2.one * 0.5f, Vector2.one * 0.5f, Vector2.one * 0.5f,
-                new Vector2(0f, 105f), new Vector2(760f, 80f));
+            Image shade = CreateImage(canvas.transform, "LoadingShade", new Color(0.04f, 0.015f, 0.005f, 0.12f));
+            Stretch(shade.rectTransform);
 
-            progressBar = CreateProgressBar(canvas.transform);
+            Image panel = CreateImage(canvas.transform, "LoadingPanel", new Color(0.1f, 0.04f, 0.015f, 0.9f));
+            SetRect(panel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(0f, 34f), new Vector2(1040f, 210f));
+            panel.gameObject.AddComponent<Outline>().effectColor = new Color32(215, 154, 59, 210);
+            panel.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.65f);
+
+            Text title = CreateText(panel.transform, "LoadingTitle", "주막을 준비하는 중...", 36,
+                new Color32(255, 236, 190, 255), font, FontStyle.Bold);
+            SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(0f, -45f), new Vector2(760f, 52f));
+
+            progressBar = CreateProgressBar(panel.transform);
             SetRect(progressBar.GetComponent<RectTransform>(), Vector2.one * 0.5f, Vector2.one * 0.5f, Vector2.one * 0.5f,
-                Vector2.zero, new Vector2(760f, 42f));
+                new Vector2(-42f, -4f), new Vector2(820f, 34f));
 
-            progressText = CreateText(canvas.transform, "ProgressText", "0%", 30,
+            progressText = CreateText(panel.transform, "ProgressText", "0%", 25,
                 new Color32(255, 246, 223, 255), font, FontStyle.Bold);
             SetRect(progressText.rectTransform, Vector2.one * 0.5f, Vector2.one * 0.5f, Vector2.one * 0.5f,
-                new Vector2(0f, -70f), new Vector2(300f, 55f));
+                new Vector2(425f, -4f), new Vector2(100f, 44f));
 
-            Text hint = CreateText(canvas.transform, "LoadingHint", "맛있는 음식과 따뜻한 자리를 마련하고 있습니다", 23,
-                new Color(1f, 0.84f, 0.55f, 1f), font);
-            SetRect(hint.rectTransform, Vector2.one * 0.5f, Vector2.one * 0.5f, Vector2.one * 0.5f,
-                new Vector2(0f, -145f), new Vector2(850f, 50f));
+            Text hint = CreateText(panel.transform, "LoadingHint", "맛있는 음식과 따뜻한 자리를 마련하고 있습니다", 20,
+                new Color32(230, 190, 120, 255), font);
+            SetRect(hint.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(0f, 22f), new Vector2(850f, 38f));
         }
 
         private static Font CreateKoreanFont()
