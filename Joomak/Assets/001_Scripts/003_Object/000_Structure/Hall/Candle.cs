@@ -11,6 +11,12 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
         private const int TimeoutPenalty = 5;
 
         [SerializeField] private SpriteRenderer flame;
+
+        [Header("아트 (Light_On / Light_Off)")]
+        [SerializeField] private Sprite litSprite;
+        [SerializeField] private Sprite unlitSprite;
+
+        [Header("스프라이트가 없을 때의 폴백 색상")]
         [SerializeField] private Color litColor = new(1f, 0.85f, 0.35f);
         [SerializeField] private Color unlitColor = new(0.28f, 0.26f, 0.30f);
 
@@ -21,7 +27,7 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
         protected override void Awake()
         {
             base.Awake();
-            ApplyColor();
+            ApplyVisual();
         }
 
         private void Update()
@@ -63,22 +69,33 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
 
             IsLit = false;
             remainingSeconds = timeLimitSeconds;
-            ApplyColor();
+            ApplyVisual();
         }
 
         private void Relight()
         {
             IsLit = true;
             remainingSeconds = 0f;
-            ApplyColor();
+            ApplyVisual();
         }
 
-        private void ApplyColor()
+        private void ApplyVisual()
         {
-            if (flame != null)
+            if (flame == null)
             {
-                flame.color = IsLit ? litColor : unlitColor;
+                return;
             }
+
+            // 켜짐/꺼짐 스프라이트가 있으면 교체한다(실제 아트). 없으면 색만 바꾼다(플레이스홀더).
+            Sprite sprite = IsLit ? litSprite : unlitSprite;
+            if (sprite != null)
+            {
+                flame.sprite = sprite;
+                flame.color = Color.white;
+                return;
+            }
+
+            flame.color = IsLit ? litColor : unlitColor;
         }
     }
 }
