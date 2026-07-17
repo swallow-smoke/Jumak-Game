@@ -26,11 +26,10 @@ namespace _001_Scripts._002_Controller
             return needsBroom == IsHoldingBroom(carrier);
         }
 
-        // 빗자루는 아무 바닥에나 내려놓을 수 있고, 그 자리에 남아 다른 플레이어도 집을 수 있다.
-        // 요리·재료는 대상 없이 아무데나 버릴 수 없으므로 빗자루(Tool)만 허용한다.
-        public static bool TryDropBroom(ISingleItemCarrier carrier, Vector3 position)
+        // 들고 있는 아이템은 종류에 관계없이 아무 바닥에나 내려놓을 수 있고, 그 자리에 남아 다른 플레이어도 집을 수 있다.
+        public static bool TryDropHeldItem(ISingleItemCarrier carrier, Vector3 position)
         {
-            return IsHoldingBroom(carrier) && carrier.TryDropHeldItem(position);
+            return carrier != null && carrier.HeldItem != null && carrier.TryDropHeldItem(position);
         }
     }
 }
