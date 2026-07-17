@@ -5,6 +5,7 @@ using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using _001_Scripts._003_Object.Interface;
 using _001_Scripts._005_Data._000_Item;
+using _001_Scripts._005_Data.Upgrade;
 using TMPro;
 using UnityEngine;
 
@@ -64,7 +65,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
 
                 case State.Ready when !outputIsFailed:
                     readyElapsedSeconds += Time.deltaTime;
-                    if (readyElapsedSeconds >= failTimeoutSeconds)
+                    if (readyElapsedSeconds >= failTimeoutSeconds * FailureDelayMultiplier)
                     {
                         TurnOutputIntoFailedDish();
                     }
@@ -152,7 +153,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
 
             if (selectedRecipe.TryConsumeIngredients(ingredientInventory))
             {
-                remainingCookTime = selectedRecipe.CookTime;
+                remainingCookTime = selectedRecipe.CookTime * CookTimeMultiplier;
                 state = State.Cooking;
             }
         }
@@ -173,6 +174,40 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
         private void ReduceCookTime()
         {
             remainingCookTime -= selectedRecipe.InteractReduceSeconds;
+        }
+
+        private static float CookTimeMultiplier
+        {
+            get
+            {
+                RunState runState = RunState.Instance;
+                if (runState == null)
+                {
+                    return 1f;
+                }
+
+                int level = runState.GetLevel(UpgradeId.CookTime1)
+                            + runState.GetLevel(UpgradeId.CookTime2)
+                            + runState.GetLevel(UpgradeId.CookTime3);
+                return Mathf.Max(0.7f, 1f - Mathf.Clamp(level, 0, 3) * 0.1f);
+            }
+        }
+
+        private static float FailureDelayMultiplier
+        {
+            get
+            {
+                RunState runState = RunState.Instance;
+                if (runState == null)
+                {
+                    return 1f;
+                }
+
+                int level = runState.GetLevel(UpgradeId.FailureDelay1)
+                            + runState.GetLevel(UpgradeId.FailureDelay2)
+                            + runState.GetLevel(UpgradeId.FailureDelay3);
+                return 1f + Mathf.Clamp(level, 0, 3) * 0.1f;
+            }
         }
 
         private void CompleteCooking()

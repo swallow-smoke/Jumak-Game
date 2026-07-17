@@ -39,9 +39,8 @@ namespace _001_Scripts._900_Tools.Editor
         // 전부 타일 크기(1.5333)의 배수라 격자에 딱 맞는다.
         private static readonly float[] ColumnCells = { -20f, -14f };
 
-        // 1행은 카운터(y 0.22~6.22) 높이에 맞춘다. 서빙 동선이 여기서 시작한다.
-        // 2행/3행을 나중에 열 때는 셀 7(y 10.73), 셀 12(y 18.4)를 쓰면 된다.
-        private static readonly float[] RowCells = { 2f };
+        // 1행의 2개만 활성 상태로 시작한다. 2행/3행의 4개는 테이블 추가 구매마다 순서대로 열린다.
+        private static readonly float[] RowCells = { 2f, 7f, 12f };
 
         // 손님이 실제로 등장하려면 매니저 + 입구 + 플레이어가 씬에 있어야 한다.
         // 테이블 배치와 따로 돌릴 수 있게 메뉴를 나눠둔다.
@@ -227,6 +226,15 @@ namespace _001_Scripts._900_Tools.Editor
                     placed.Add(table.GetComponent<DiningTable>());
                     Debug.Log($"[HallScenePlacer] {table.name} @ ({position.x:F2}, {position.y:F2})");
                 }
+            }
+
+            HallManager hall = Object.FindAnyObjectByType<HallManager>();
+            if (hall != null)
+            {
+                SerializedObject hallData = new(hall);
+                SetObjectArray(hallData.FindProperty("tables"), placed);
+                hallData.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(hall);
             }
 
             EditorSceneManager.MarkSceneDirty(scene);

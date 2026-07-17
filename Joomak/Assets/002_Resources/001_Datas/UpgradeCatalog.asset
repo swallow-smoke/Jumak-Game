@@ -1,0 +1,174 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b620e21ca4e6d114384089ef3a4dfda3, type: 3}
+  m_Name: UpgradeCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._005_Data.Upgrade.UpgradeCatalog
+  upgrades:
+  - id: 0
+    category: 0
+    displayName: "\uB300\uC26C"
+    description: "\uC9E7\uC740 \uAC70\uB9AC \uB3CC\uC9C4 \uC774\uB3D9 \uC2B5\uB4DD
+      (\uCFE8\uD0C0\uC784 5\uCD08)"
+    basePrice: 150
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 0
+    hasPrerequisite: 0
+  - id: 1
+    category: 0
+    displayName: "\uC774\uB3D9 \uC18D\uB3C4 1\uB2E8\uACC4"
+    description: "\uC774\uB3D9\uC18D\uB3C4 +10%"
+    basePrice: 80
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 1
+    hasPrerequisite: 0
+  - id: 2
+    category: 0
+    displayName: "\uC774\uB3D9 \uC18D\uB3C4 2\uB2E8\uACC4"
+    description: "\uC774\uB3D9\uC18D\uB3C4 +10% (\uB204\uC801 +20%)"
+    basePrice: 120
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 1
+    hasPrerequisite: 1
+  - id: 3
+    category: 0
+    displayName: "\uC774\uB3D9 \uC18D\uB3C4 3\uB2E8\uACC4"
+    description: "\uC774\uB3D9\uC18D\uB3C4 +10% (\uB204\uC801 +30%, \uC0C1\uD55C)"
+    basePrice: 180
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 2
+    hasPrerequisite: 1
+  - id: 4
+    category: 0
+    displayName: "\uBA85\uC131 \uD68C\uBCF5"
+    description: "\uBA85\uC131 +10 (\uCD5C\uB300 100). \uBC18\uBCF5 \uAD6C\uB9E4
+      \uAC00\uB2A5"
+    basePrice: 150
+    priceMultiplier: 1
+    maxPurchases: 99
+    prerequisite: 4
+    hasPrerequisite: 0
+  - id: 5
+    category: 2
+    displayName: "\uC870\uB9AC\uC2DC\uAC04 \uAC10\uC18C 1\uB2E8\uACC4"
+    description: "\uBAA8\uB4E0 \uC870\uB9AC \uC2DC\uAC04 -10%"
+    basePrice: 120
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 5
+    hasPrerequisite: 0
+  - id: 6
+    category: 2
+    displayName: "\uC870\uB9AC\uC2DC\uAC04 \uAC10\uC18C 2\uB2E8\uACC4"
+    description: "\uC870\uB9AC \uC2DC\uAC04 -10% (\uB204\uC801 -20%)"
+    basePrice: 180
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 5
+    hasPrerequisite: 1
+  - id: 7
+    category: 2
+    displayName: "\uC870\uB9AC\uC2DC\uAC04 \uAC10\uC18C 3\uB2E8\uACC4"
+    description: "\uC870\uB9AC \uC2DC\uAC04 -10% (\uB204\uC801 -30%, \uD558\uD55C)"
+    basePrice: 270
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 6
+    hasPrerequisite: 1
+  - id: 14
+    category: 2
+    displayName: "\uC2E4\uD328\uC2DC\uAC04 \uC9C0\uC5F0 1\uB2E8\uACC4"
+    description: "\uC644\uC131 \uC694\uB9AC \uC2E4\uD328\uAE4C\uC9C0\uC758 \uC2DC\uAC04
+      +10%"
+    basePrice: 100
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 14
+    hasPrerequisite: 0
+  - id: 15
+    category: 2
+    displayName: "\uC2E4\uD328\uC2DC\uAC04 \uC9C0\uC5F0 2\uB2E8\uACC4"
+    description: "\uC2E4\uD328\uAE4C\uC9C0\uC758 \uC2DC\uAC04 +10% (\uB204\uC801
+      +20%)"
+    basePrice: 150
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 14
+    hasPrerequisite: 1
+  - id: 16
+    category: 2
+    displayName: "\uC2E4\uD328\uC2DC\uAC04 \uC9C0\uC5F0 3\uB2E8\uACC4"
+    description: "\uC2E4\uD328\uAE4C\uC9C0\uC758 \uC2DC\uAC04 +10% (\uB204\uC801
+      +30%, \uC0C1\uD55C)"
+    basePrice: 225
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 15
+    hasPrerequisite: 1
+  - id: 17
+    category: 2
+    displayName: "\uACE0\uAE09 \uC694\uB9AC"
+    description: "\uC694\uB9AC \uD310\uB9E4 \uC2DC \uBA85\uC131 +1 \uCD94\uAC00"
+    basePrice: 300
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 17
+    hasPrerequisite: 0
+  - id: 9
+    category: 1
+    displayName: "\uC190\uB2D8 \uC778\uB0B4\uC2EC 1\uB2E8\uACC4"
+    description: "\uC190\uB2D8 \uC778\uB0B4\uC2EC +10\uCD08"
+    basePrice: 100
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 9
+    hasPrerequisite: 0
+  - id: 10
+    category: 1
+    displayName: "\uC190\uB2D8 \uC778\uB0B4\uC2EC 2\uB2E8\uACC4"
+    description: "\uC778\uB0B4\uC2EC +10\uCD08 (\uB204\uC801 +20\uCD08)"
+    basePrice: 150
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 9
+    hasPrerequisite: 1
+  - id: 11
+    category: 1
+    displayName: "\uC190\uB2D8 \uC778\uB0B4\uC2EC 3\uB2E8\uACC4"
+    description: "\uC778\uB0B4\uC2EC +10\uCD08 (\uB204\uC801 +30\uCD08, \uC0C1\uD55C)"
+    basePrice: 225
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 10
+    hasPrerequisite: 1
+  - id: 12
+    category: 1
+    displayName: "\uCCA0\uC81C \uC190\uC7A1\uC774 \uBE57\uC790\uB8E8"
+    description: "\uC190\uB188 \uCC99\uACB0 5\uD68C\u21923\uD68C, \uCCAD\uC18C 3\uD68C\u21922\uD68C"
+    basePrice: 200
+    priceMultiplier: 1
+    maxPurchases: 1
+    prerequisite: 12
+    hasPrerequisite: 0
+  - id: 13
+    category: 1
+    displayName: "\uD14C\uC774\uBE14 \uCD94\uAC00"
+    description: "\uD14C\uC774\uBE14 +1\uAC1C(\uC88C\uC11D +2\uC11D). \uCD5C\uB300
+      6\uAC1C\uAE4C\uC9C0"
+    basePrice: 180
+    priceMultiplier: 1.5
+    maxPurchases: 4
+    prerequisite: 13
+    hasPrerequisite: 0

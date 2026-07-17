@@ -7,6 +7,7 @@ using _001_Scripts._003_Object._000_Structure.Hall;
 using _001_Scripts._003_Object._001_Entity.NPC;
 using _001_Scripts._005_Data._000_Item;
 using _001_Scripts._005_Data.Hall;
+using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 
 namespace _001_Scripts._001_Manager
@@ -35,13 +36,20 @@ namespace _001_Scripts._001_Manager
         private readonly MessageSubscriptionBag subscriptions = new();
         private float spawnTimer;
         private int unlockedTableCount;
+        private RunState runState;
 
         public override void Initialize()
         {
             subscriptions.Add(HallMessagePort.OnDishReady(OnDishReady));
             subscriptions.Add(HallMessagePort.OnOrderStatusChanged(OnOrderStatusChanged));
 
-            SetUnlockedTableCount(startingTableCount);
+            runState = RunState.Instance;
+            if (runState != null)
+            {
+                runState.Purchased += OnUpgradePurchased;
+            }
+
+            SetUnlockedTableCount(startingTableCount + PurchasedTableCount());
         }
 
         // 테이블은 씬에 미리 다 놓여 있고, 잠긴 것은 꺼둔다.
@@ -64,8 +72,24 @@ namespace _001_Scripts._001_Manager
 
         protected override void OnDestroy()
         {
+            if (runState != null)
+            {
+                runState.Purchased -= OnUpgradePurchased;
+            }
+
+            runState = null;
             subscriptions.Dispose();
             base.OnDestroy();
+        }
+
+        private int PurchasedTableCount() => runState != null ? runState.GetLevel(UpgradeId.TableAdd) : 0;
+
+        private void OnUpgradePurchased(UpgradeId id, int _)
+        {
+            if (id == UpgradeId.TableAdd)
+            {
+                SetUnlockedTableCount(startingTableCount + PurchasedTableCount());
+            }
         }
 
         private void Update()

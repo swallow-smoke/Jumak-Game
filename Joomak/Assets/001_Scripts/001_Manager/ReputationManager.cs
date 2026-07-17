@@ -1,4 +1,5 @@
 using System;
+using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 
 namespace _001_Scripts._001_Manager
@@ -9,8 +10,10 @@ namespace _001_Scripts._001_Manager
         [SerializeField, Min(1)] private int startValue = 20;
         [SerializeField, Min(1)] private int maxValue = 100;
 
+        private RunState State => RunState.Instance;
+
         public int Current { get; private set; }
-        public int MaxValue => maxValue;
+        public int MaxValue => State != null ? State.MaxReputation : maxValue;
         public bool IsGameOver { get; private set; }
 
         public event Action<int> Changed;
@@ -19,8 +22,28 @@ namespace _001_Scripts._001_Manager
         public override void Initialize()
         {
             IsGameOver = false;
-            Current = Mathf.Clamp(startValue, 0, maxValue);
+
+            if (State != null)
+            {
+                State.ReputationChanged += OnStateReputationChanged;
+                Current = State.Reputation;
+            }
+            else
+            {
+                Current = Mathf.Clamp(startValue, 0, maxValue);
+            }
+
             Changed?.Invoke(Current);
+        }
+
+        protected override void OnDestroy()
+        {
+            if (State != null)
+            {
+                State.ReputationChanged -= OnStateReputationChanged;
+            }
+
+            base.OnDestroy();
         }
 
         public void Penalize(int amount, string reason)
@@ -38,7 +61,18 @@ namespace _001_Scripts._001_Manager
                 return;
             }
 
-            Current = Mathf.Clamp(Current + delta, 0, maxValue);
+            if (State != null)
+            {
+                State.AddReputation(delta);
+                return;
+            }
+
+            OnStateReputationChanged(Mathf.Clamp(Current + delta, 0, maxValue));
+        }
+
+        private void OnStateReputationChanged(int value)
+        {
+            Current = value;
             Changed?.Invoke(Current);
 
             if (Current > 0)

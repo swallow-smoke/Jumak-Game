@@ -1,4 +1,5 @@
 using System;
+using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 
 namespace _001_Scripts._005_Data.Hall
@@ -27,9 +28,18 @@ namespace _001_Scripts._005_Data.Hall
         public float EventInterval => eventInterval;
         public float ResolveSeconds => resolveSeconds;
         public float DineAndDashTelegraphSeconds => dineAndDashTelegraphSeconds;
-        public int RowdyHits => rowdyHits;
-        public int TrashHits => trashHits;
+        public int RowdyHits => HasIronBroom ? 3 : rowdyHits;
+        public int TrashHits => HasIronBroom ? 2 : trashHits;
         public int DineAndDashHits => dineAndDashHits;
+
+        private static bool HasIronBroom
+        {
+            get
+            {
+                RunState state = RunState.Instance;
+                return state != null && state.GetLevel(UpgradeId.IronBroom) > 0;
+            }
+        }
 
         public bool RollRowdy() => UnityEngine.Random.value < rowdyChance;
         public bool RollDineAndDash() => UnityEngine.Random.value < dineAndDashChance;

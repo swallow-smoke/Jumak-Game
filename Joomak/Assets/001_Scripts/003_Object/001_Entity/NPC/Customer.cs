@@ -7,6 +7,7 @@ using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using _001_Scripts._003_Object.Interface;
 using _001_Scripts._005_Data._000_Item;
 using _001_Scripts._005_Data.Hall;
+using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 
 namespace _001_Scripts._003_Object._001_Entity.NPC
@@ -372,6 +373,13 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
             HasPaid = true;
             GameManager.Instance.UpdateMoney(orderedDish.Price, $"{orderedDish.DisplayName} 판매");
+            if (RunState.Instance != null &&
+                RunState.Instance.GetLevel(UpgradeId.PremiumDish) > 0 &&
+                ReputationManager.Instance != null)
+            {
+                ReputationManager.Instance.Restore(1);
+            }
+
             return true;
         }
 
