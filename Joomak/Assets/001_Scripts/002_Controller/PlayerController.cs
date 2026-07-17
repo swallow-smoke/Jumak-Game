@@ -1,6 +1,7 @@
 using _001_Scripts._002_Controller.Interface;
 using _001_Scripts._003_Object.Interface;
 using _001_Scripts._003_Object._001_Entity.Item;
+using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -26,6 +27,7 @@ namespace _001_Scripts._002_Controller
 
         private readonly RaycastHit2D[] interactionHits = new RaycastHit2D[24];
         private Rigidbody2D body;
+        private ISingleItemCarrier carrier;
         private Vector2 moveInput;
         private Vector2 lookDirection = Vector2.down;
         private ContactFilter2D interactionFilter;
@@ -35,6 +37,7 @@ namespace _001_Scripts._002_Controller
         private void Awake()
         {
             body = GetComponent<Rigidbody2D>();
+            carrier = GetComponent<ISingleItemCarrier>();
             body.gravityScale = 0f;
             body.freezeRotation = true;
 
@@ -60,10 +63,26 @@ namespace _001_Scripts._002_Controller
 
             UpdateFocusedObject();
 
-            if (keyboard[interactKey].wasPressedThisFrame && focusedInteractable != null)
+            if (keyboard[interactKey].wasPressedThisFrame)
             {
-                focusedInteractable.Interact(gameObject);
+                TryInteract();
             }
+        }
+
+        private void TryInteract()
+        {
+            if (focusedInteractable != null)
+            {
+                if (InteractionRules.CanInteract(carrier, focusedInteractable))
+                {
+                    focusedInteractable.Interact(gameObject);
+                }
+
+                return;
+            }
+
+            // 아무것도 바라보고 있지 않으면 들고 있던 빗자루를 발 앞에 내려놓는다.
+            InteractionRules.TryDropBroom(carrier, body.position + lookDirection * 0.6f);
         }
 
         private void FixedUpdate()

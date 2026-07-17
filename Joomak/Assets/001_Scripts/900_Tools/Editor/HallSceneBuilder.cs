@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using _001_Scripts._001_Manager;
 using _001_Scripts._003_Object._000_Structure.Hall;
+using _001_Scripts._003_Object._001_Entity;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.NPC;
 using _001_Scripts._005_Data._000_Item;
@@ -26,7 +27,12 @@ namespace _001_Scripts._900_Tools.Editor
         private const string DatabasePath = ItemFolder + "/ItemDatabase.asset";
         private const string ScenePath = "Assets/000_Scenes/HallTest.unity";
 
+        private const string BroomId = "broom";
         private static readonly Color PlateColor = new(0.85f, 0.85f, 0.9f);
+        private static readonly Color BroomColor = new(0.55f, 0.35f, 0.15f);
+
+        // 기획서: 빗자루는 홀 구역 왼쪽 아래에 놓인다.
+        private static readonly Vector3 BroomSpawnPosition = new(1.6f, -4.2f, 0f);
 
         [MenuItem("Joomak/Hall/Build Hall Test Scene")]
         public static void BuildAll()
@@ -38,19 +44,23 @@ namespace _001_Scripts._900_Tools.Editor
             Sprite sprite = CreatePlaceholderSprite();
 
             List<ItemBase> allItems = new();
-            ItemBase plate = CreateItem("plate", "접시", ItemCategory.Plate, 0);
+            ItemBase plate = CreateItem("plate", "접시", ItemCategory.Plate, 0, 0);
             allItems.Add(plate);
+
+            ItemBase broom = CreateItem(BroomId, "빗자루", ItemCategory.Tool, 0, 0);
+            allItems.Add(broom);
 
             List<ItemBase> menu = new();
             foreach (DishDef dish in Dishes)
             {
-                ItemBase item = CreateItem(dish.Id, dish.DisplayName, ItemCategory.Dish, dish.Level);
+                ItemBase item = CreateItem(dish.Id, dish.DisplayName, ItemCategory.Dish, dish.Level, dish.Price);
                 menu.Add(item);
                 allItems.Add(item);
             }
 
             // 아이템마다 프리팹을 따로 둔다. 아트가 나오면 각 프리팹의 Visual만 교체하면 된다.
             LinkWorldPrefab(plate, sprite, PlateColor);
+            LinkWorldPrefab(broom, sprite, BroomColor);
             for (int i = 0; i < menu.Count; i++)
             {
                 LinkWorldPrefab(menu[i], sprite, Dishes[i].Color);
@@ -59,6 +69,7 @@ namespace _001_Scripts._900_Tools.Editor
             CreateDatabase(allItems);
             CreateCustomerPrefab(sprite);
             CreatePlayerPrefab(sprite);
+            CreateTrashPrefab(sprite);
 
             AssetDatabase.SaveAssets();
             BuildScene();
@@ -79,6 +90,8 @@ namespace _001_Scripts._900_Tools.Editor
             ItemBase plate = AssetDatabase.LoadAssetAtPath<ItemData>($"{ItemFolder}/plate.asset");
             GameObject customerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabFolder}/Customer.prefab");
             GameObject playerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabFolder}/Player_Hall.prefab");
+            GameObject broomPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabFolder}/Item_{BroomId}.prefab");
+            GameObject trashPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabFolder}/Trash.prefab");
 
             List<ItemBase> menu = new();
             foreach (DishDef dish in Dishes)
@@ -87,6 +100,8 @@ namespace _001_Scripts._900_Tools.Editor
             }
 
             AssertLoaded(sprite, database, plate, customerPrefab, playerPrefab, menu);
+            Require(broomPrefab, "broomPrefab");
+            Require(trashPrefab, "trashPrefab");
 
             // Full HD 16:9 / 100 PPU 기준 월드는 19.2 x 10.8. 왼쪽이 주방, 오른쪽이 홀.
             Camera camera = Camera.main;
@@ -116,8 +131,25 @@ namespace _001_Scripts._900_Tools.Editor
 
             CustomerEntrance entrance = CreateEntrance();
 
+            // 빗자루는 홀 왼쪽 아래 바닥에 놓여 있다. 다가가 상호작용하면 집어든다.
+            GameObject broom = (GameObject)PrefabUtility.InstantiatePrefab(broomPrefab);
+            broom.transform.position = BroomSpawnPosition;
+
             GameObject reputationObject = new("ReputationManager");
             reputationObject.AddComponent<ReputationManager>();
+
+            // 손님이 식사를 마치고 낸 전이 여기에 쌓인다. 없으면 계산이 조용히 무시된다.
+            GameObject gameObject = new("GameManager");
+            gameObject.AddComponent<GameManager>();
+
+            List<Candle> candles = CreateCandles(sprite);
+
+            GameObject eventObject = new("EventManager");
+            EventManager eventManager = eventObject.AddComponent<EventManager>();
+            SerializedObject eventData = new(eventManager);
+            eventData.FindProperty("trashPrefab").objectReferenceValue = trashPrefab.GetComponent<Trash>();
+            SetObjectArray(eventData.FindProperty("candles"), candles);
+            eventData.ApplyModifiedPropertiesWithoutUndo();
 
             GameObject hallObject = new("HallManager");
             HallManager hallManager = hallObject.AddComponent<HallManager>();
@@ -168,6 +200,37 @@ namespace _001_Scripts._900_Tools.Editor
             return table;
         }
 
+        // 기획서 8번: 맵 사이드에 촛불 6개. 홀 위/아래 가장자리에 3개씩 놓는다.
+        private static List<Candle> CreateCandles(Sprite sprite)
+        {
+            List<Candle> candles = new();
+            float[] columns = { 2.5f, 5f, 7.5f };
+            float[] rows = { 4.9f, -4.9f };
+
+            foreach (float y in rows)
+            {
+                foreach (float x in columns)
+                {
+                    GameObject candleObject = new($"Candle_{candles.Count}");
+                    candleObject.transform.position = new Vector3(x, y, 0f);
+
+                    SpriteRenderer flame = AddVisual(
+                        candleObject.transform, sprite, new Color(1f, 0.85f, 0.35f), new Vector2(0.25f, 0.45f), 2);
+
+                    BoxCollider2D collider = candleObject.AddComponent<BoxCollider2D>();
+                    collider.size = new Vector2(0.45f, 0.6f);
+
+                    Candle candle = candleObject.AddComponent<Candle>();
+                    SerializedObject candleData = new(candle);
+                    candleData.FindProperty("flame").objectReferenceValue = flame;
+                    candleData.ApplyModifiedPropertiesWithoutUndo();
+                    candles.Add(candle);
+                }
+            }
+
+            return candles;
+        }
+
         private static CustomerEntrance CreateEntrance()
         {
             GameObject entranceObject = new("CustomerEntrance");
@@ -190,16 +253,37 @@ namespace _001_Scripts._900_Tools.Editor
             return entrance;
         }
 
+        private static GameObject CreateTrashPrefab(Sprite sprite)
+        {
+            GameObject root = new("Trash");
+            AddVisual(root.transform, sprite, new Color(0.45f, 0.42f, 0.30f), new Vector2(0.5f, 0.5f), 3);
+
+            CircleCollider2D collider = root.AddComponent<CircleCollider2D>();
+            collider.radius = 0.3f;
+            collider.isTrigger = true;
+
+            root.AddComponent<Trash>();
+
+            string path = $"{PrefabFolder}/Trash.prefab";
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
+            Object.DestroyImmediate(root);
+            return prefab;
+        }
+
         private static GameObject CreateCustomerPrefab(Sprite sprite)
         {
             GameObject root = new("Customer");
-            AddVisual(root.transform, sprite, new Color(0.85f, 0.5f, 0.35f), new Vector2(0.7f, 0.9f), 5);
+            SpriteRenderer visual = AddVisual(root.transform, sprite, new Color(0.85f, 0.5f, 0.35f), new Vector2(0.7f, 0.9f), 5);
 
             CircleCollider2D collider = root.AddComponent<CircleCollider2D>();
             collider.radius = 0.4f;
             collider.isTrigger = true;
 
-            root.AddComponent<Customer>();
+            // 먹튀가 되면 이 렌더러를 빨갛게 물들인다.
+            Customer customer = root.AddComponent<Customer>();
+            SerializedObject customerData = new(customer);
+            customerData.FindProperty("visual").objectReferenceValue = visual;
+            customerData.ApplyModifiedPropertiesWithoutUndo();
 
             string path = $"{PrefabFolder}/Customer.prefab";
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
@@ -268,7 +352,7 @@ namespace _001_Scripts._900_Tools.Editor
             itemData.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static ItemData CreateItem(string id, string displayName, ItemCategory category, int level)
+        private static ItemData CreateItem(string id, string displayName, ItemCategory category, int level, int price)
         {
             string path = $"{ItemFolder}/{id}.asset";
             ItemData item = AssetDatabase.LoadAssetAtPath<ItemData>(path);
@@ -284,6 +368,7 @@ namespace _001_Scripts._900_Tools.Editor
             data.FindProperty("category").intValue = (int)category;
             data.FindProperty("processingLevel").intValue = level;
             data.FindProperty("maxStack").intValue = 99;
+            data.FindProperty("price").intValue = price;
             data.ApplyModifiedPropertiesWithoutUndo();
             return item;
         }
@@ -341,7 +426,7 @@ namespace _001_Scripts._900_Tools.Editor
         }
 
         // 로직은 루트, 그래픽은 Visual 자식. 아트 교체 시 이 자식만 손대면 된다.
-        private static void AddVisual(Transform parent, Sprite sprite, Color color, Vector2 size, int sortingOrder)
+        private static SpriteRenderer AddVisual(Transform parent, Sprite sprite, Color color, Vector2 size, int sortingOrder)
         {
             GameObject visual = new("Visual");
             visual.transform.SetParent(parent, false);
@@ -351,6 +436,7 @@ namespace _001_Scripts._900_Tools.Editor
             renderer.sprite = sprite;
             renderer.color = color;
             renderer.sortingOrder = sortingOrder;
+            return renderer;
         }
 
         private static Transform CreateChildPoint(Transform parent, string name, Vector3 localPosition)
@@ -416,17 +502,17 @@ namespace _001_Scripts._900_Tools.Editor
             AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
         }
 
-        // 기획서 5-2 요리 목록
+        // 기획서 5-2 요리 목록 (가공단계, 판매가(전))
         private static readonly DishDef[] Dishes =
         {
-            new("rice", "쌀밥", 1, new Color(0.95f, 0.95f, 0.88f)),
-            new("pickled_radish", "무짠지", 1, new Color(0.95f, 0.85f, 0.45f)),
-            new("boiled_meat", "삶은 고기", 1, new Color(0.72f, 0.42f, 0.36f)),
-            new("kimchi", "김치", 1, new Color(0.85f, 0.25f, 0.18f)),
-            new("soybean_soup", "된장국", 2, new Color(0.72f, 0.60f, 0.35f)),
-            new("bindaetteok", "빈대떡", 2, new Color(0.88f, 0.72f, 0.35f)),
-            new("gukbap", "국밥", 2, new Color(0.80f, 0.55f, 0.40f)),
-            new("sikhye", "식혜", 1, new Color(0.90f, 0.80f, 0.60f))
+            new("rice", "쌀밥", 1, 5, new Color(0.95f, 0.95f, 0.88f)),
+            new("pickled_radish", "무짠지", 1, 5, new Color(0.95f, 0.85f, 0.45f)),
+            new("boiled_meat", "삶은 고기", 1, 10, new Color(0.72f, 0.42f, 0.36f)),
+            new("kimchi", "김치", 1, 8, new Color(0.85f, 0.25f, 0.18f)),
+            new("soybean_soup", "된장국", 2, 8, new Color(0.72f, 0.60f, 0.35f)),
+            new("bindaetteok", "빈대떡", 2, 15, new Color(0.88f, 0.72f, 0.35f)),
+            new("gukbap", "국밥", 2, 15, new Color(0.80f, 0.55f, 0.40f)),
+            new("sikhye", "식혜", 1, 8, new Color(0.90f, 0.80f, 0.60f))
         };
 
         private readonly struct DishDef
@@ -434,13 +520,15 @@ namespace _001_Scripts._900_Tools.Editor
             public readonly string Id;
             public readonly string DisplayName;
             public readonly int Level;
+            public readonly int Price;
             public readonly Color Color;
 
-            public DishDef(string id, string displayName, int level, Color color)
+            public DishDef(string id, string displayName, int level, int price, Color color)
             {
                 Id = id;
                 DisplayName = displayName;
                 Level = level;
+                Price = price;
                 Color = color;
             }
         }
