@@ -1,11 +1,13 @@
 using _001_Scripts._002_Controller.Interface;
 using _001_Scripts._003_Object.Interface;
+using _001_Scripts._003_Object._001_Entity.Item;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace _001_Scripts._002_Controller
 {
     [RequireComponent(typeof(Rigidbody2D))]
+    [RequireComponent(typeof(SingleItemCarrier))]
     public sealed class PlayerController : MonoBehaviour, IController
     {
         [Header("Movement")]

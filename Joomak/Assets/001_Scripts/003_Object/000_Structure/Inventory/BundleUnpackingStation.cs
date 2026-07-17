@@ -1,6 +1,6 @@
 using _001_Scripts._003_Object._000_Structure.Interface;
+using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
-using _001_Scripts._005_Data._000_Item;
 using UnityEngine;
 
 namespace _001_Scripts._003_Object._000_Structure.Inventory
@@ -13,18 +13,18 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
 
         public override void Interact(GameObject interactor)
         {
-            if (!interactor.TryGetComponent(out IIngredientBundleCarrier carrier))
+            if (!interactor.TryGetComponent(out ISingleItemCarrier carrier) ||
+                carrier.HeldItem is not IngredientBundle bundle)
             {
                 return;
             }
 
-            ItemBundleData bundle = carrier.CarriedBundle;
-            if (bundle == null || !inventory.TryAddRange(bundle.GetUnpackedItems()))
+            if (bundle.BundleData == null || !inventory.TryAddRange(bundle.BundleData.GetUnpackedItems()))
             {
                 return;
             }
 
-            carrier.TryRelease(bundle);
+            carrier.TryConsumeHeldItem(bundle);
         }
     }
 }
