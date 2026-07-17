@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: -7772215877827363809}
   - component: {fileID: -7201784208851313879}
   - component: {fileID: 8520736742334258505}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: gukbab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -169,5 +169,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f36993dd858a913449049f64571cfa3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._003_Object._001_Entity.Item.WorldItem
-  carriedScale: {x: 1, y: 1, z: 1}
-  item: {fileID: 0}
+  carriedScale: {x: 5, y: 5, z: 5}
+  item: {fileID: 11400000, guid: 5b79c6e3b5474314e854b2bc3fe144f0, type: 2}
