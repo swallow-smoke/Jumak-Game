@@ -20,7 +20,9 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
         [SerializeField] private string structureId = "ServingCounter";
 
         [Tooltip("주방이 올려둔 완성 요리. 홀이 집어간다.")]
-        [SerializeField] private InventoryModel dishInventory = new();
+        [SerializeField] private InventoryModel dishInventory = new(3);
+
+        [SerializeField] private SpriteRenderer firstItemDisplay;
 
         [Header("재료 상자 하역 (기획서 8번)")]
         [Tooltip("홀이 내려놓은 상자가 얹히는 자리. 비워두면 카운터 본체 위치를 쓴다.")]
@@ -179,6 +181,7 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
 
             ItemBase pickedItem = stack.Item;
             dishInventory.TryRemove(pickedItem, 1);
+            UpdateFirstItemDisplay();
 
             if (pickedItem.Category == ItemCategory.Dish && HallManager.Instance != null)
             {
@@ -194,7 +197,7 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
                 return;
             }
 
-            ItemBase first = inventory.Stacks.Count > 0 ? inventory.Stacks[0].Item : null;
+            ItemBase first = dishInventory.Stacks.Count > 0 ? dishInventory.Stacks[0].Item : null;
             firstItemDisplay.sprite = first != null && first.WorldPrefab != null
                 ? first.WorldPrefab.GetComponentInChildren<SpriteRenderer>()?.sprite
                 : null;
