@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._005_Data._000_Item.ItemData
   itemId: failed_dish
   displayName: "\uC2E4\uD328\uD55C \uC74C\uC2DD"
-  category: 0
+  category: 1
   processingLevel: 0
   maxStack: 99
   price: 0
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 6643396391339865841, guid: a107bde5adc93c845875a1bc37c386c0, type: 3}
