@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using _001_Scripts._003_Object._000_Structure.Hall;
 using _001_Scripts._003_Object._001_Entity;
+using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._005_Data.Hall;
 using UnityEngine;
 
@@ -19,17 +20,46 @@ namespace _001_Scripts._001_Manager
                  "이 오브젝트를 선택하면 씬 뷰에 범위가 초록 사각형으로 그려진다. 타일맵에 맞춰 조정할 것.")]
         [SerializeField] private Rect trashArea = new(-19f, -9f, 17f, 18f);
 
+        [Header("재료 배달 (기획서 8번 + 5-1)")]
+        [Tooltip("주방이 재료를 얻는 유일한 수단이다. 이게 안 오면 주방이 그대로 멈춘다.\n" +
+                 "다른 이벤트와 달리 미해결 페널티가 없고, 늦게 받으면 그만큼 조리가 밀릴 뿐이다.")]
+        [SerializeField, Min(10f)] private float deliveryInterval = 300f;
+        [SerializeField, Min(1)] private int boxesPerDelivery = 3;
+
+        [Tooltip("상자가 도착할 홀 안의 지점. 비어 있으면 배달이 아예 안 온다.")]
+        [SerializeField] private Transform deliveryPoint;
+
+        [Tooltip("배달될 수 있는 재료 묶음 프리팹들. 매 배달마다 여기서 서로 다른 종류로 뽑는다.")]
+        [SerializeField] private List<IngredientBundle> bundlePrefabs = new();
+
+        [SerializeField, Min(0.1f)] private float boxSpacing = 2f;
+
+        [Tooltip("영업 시작 직후에도 한 번 배달한다. 끄면 첫 5분 동안 주방이 재료 없이 논다.")]
+        [SerializeField] private bool deliverAtStart = true;
+
         private float eventTimer;
+        private float deliveryTimer;
 
         public HallEventSettings Settings => settings;
 
         public override void Initialize()
         {
             eventTimer = 0f;
+            deliveryTimer = 0f;
+        }
+
+        private void Start()
+        {
+            if (deliverAtStart)
+            {
+                TryDeliverIngredients();
+            }
         }
 
         private void Update()
         {
+            TickDelivery();
+
             eventTimer += Time.deltaTime;
             if (eventTimer < settings.EventInterval)
             {
@@ -38,6 +68,59 @@ namespace _001_Scripts._001_Manager
 
             eventTimer = 0f;
             TriggerRandomEvent();
+        }
+
+        // 재료 배달은 랜덤 이벤트 추첨과 별개다. 기획서상 5분 고정 간격이다.
+        private void TickDelivery()
+        {
+            deliveryTimer += Time.deltaTime;
+            if (deliveryTimer < deliveryInterval)
+            {
+                return;
+            }
+
+            deliveryTimer = 0f;
+            TryDeliverIngredients();
+        }
+
+        // 기획서 8번: 5분 간격으로 재료 상자 3개 배송. 홀이 집어서 주방에 전달한다.
+        public int TryDeliverIngredients()
+        {
+            if (deliveryPoint == null || bundlePrefabs.Count == 0)
+            {
+                Debug.LogWarning("[Event] 재료 배달: deliveryPoint나 bundlePrefabs가 비어 있어 배달을 건너뜁니다.", this);
+                return 0;
+            }
+
+            // 같은 상자만 3개 오면 특정 재료가 영영 안 들어온다. 종류가 겹치지 않게 뽑되,
+            // 묶음 종류가 배달 개수보다 적으면 어쩔 수 없이 다시 채워 쓴다.
+            List<IngredientBundle> pool = new();
+            int delivered = 0;
+
+            for (int i = 0; i < boxesPerDelivery; i++)
+            {
+                if (pool.Count == 0)
+                {
+                    pool.AddRange(bundlePrefabs);
+                }
+
+                int index = Random.Range(0, pool.Count);
+                IngredientBundle prefab = pool[index];
+                pool.RemoveAt(index);
+
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                // 상자끼리 겹쳐 쌓이면 집기 어려우니 옆으로 늘어놓는다.
+                Vector3 offset = new((i - (boxesPerDelivery - 1) * 0.5f) * boxSpacing, 0f, 0f);
+                Instantiate(prefab, deliveryPoint.position + offset, Quaternion.identity);
+                delivered++;
+            }
+
+            Debug.Log($"[Event] 재료 배달: 상자 {delivered}개 도착 (다음 배달 {deliveryInterval}초 후)");
+            return delivered;
         }
 
         public void TriggerRandomEvent()
@@ -84,6 +167,19 @@ namespace _001_Scripts._001_Manager
         {
             Gizmos.color = new Color(0.2f, 1f, 0.3f, 0.9f);
             Gizmos.DrawWireCube(trashArea.center, new Vector3(trashArea.width, trashArea.height, 0.1f));
+
+            if (deliveryPoint == null)
+            {
+                return;
+            }
+
+            // 상자가 실제로 놓일 자리를 그려서, 벽이나 테이블에 겹치지 않는지 눈으로 확인할 수 있게 한다.
+            Gizmos.color = new Color(1f, 0.6f, 0.1f, 0.9f);
+            for (int i = 0; i < boxesPerDelivery; i++)
+            {
+                Vector3 offset = new((i - (boxesPerDelivery - 1) * 0.5f) * boxSpacing, 0f, 0f);
+                Gizmos.DrawWireCube(deliveryPoint.position + offset, new Vector3(1.4f, 1.4f, 0.1f));
+            }
         }
 
         public bool TryExtinguishCandle()

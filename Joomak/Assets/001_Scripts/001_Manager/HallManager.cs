@@ -21,7 +21,12 @@ namespace _001_Scripts._001_Manager
         [SerializeField, Min(1f)] private float spawnInterval = 20f;
 
         [Header("Hall")]
+        [Tooltip("씬에 놓인 테이블 전부를 '잠금 해제 순서대로' 넣는다.\n" +
+                 "앞에서부터 startingTableCount개만 켜진 채로 시작하고, 나머지는 업그레이드로 하나씩 열린다.")]
         [SerializeField] private List<DiningTable> tables = new();
+
+        [SerializeField, Min(1)] private int startingTableCount = 2;
+        [SerializeField, Min(1)] private int maxTableCount = 6;
         [SerializeField] private List<ItemBase> menu = new();
         [SerializeField] private CustomerPatienceSettings patience = new();
 
@@ -29,12 +34,33 @@ namespace _001_Scripts._001_Manager
         private readonly List<OrderRecord> orders = new();
         private readonly MessageSubscriptionBag subscriptions = new();
         private float spawnTimer;
+        private int unlockedTableCount;
 
         public override void Initialize()
         {
             subscriptions.Add(HallMessagePort.OnDishReady(OnDishReady));
             subscriptions.Add(HallMessagePort.OnOrderStatusChanged(OnOrderStatusChanged));
+
+            SetUnlockedTableCount(startingTableCount);
         }
+
+        // 테이블은 씬에 미리 다 놓여 있고, 잠긴 것은 꺼둔다.
+        // 꺼두면 렌더링도 상호작용 레이캐스트도 자동으로 걸러진다.
+        private void SetUnlockedTableCount(int count)
+        {
+            unlockedTableCount = Mathf.Clamp(count, 0, UnlockableTableCount);
+
+            for (int i = 0; i < tables.Count; i++)
+            {
+                if (tables[i] != null)
+                {
+                    tables[i].gameObject.SetActive(i < unlockedTableCount);
+                }
+            }
+        }
+
+        // 씬에 놓인 개수와 최대치 중 작은 쪽. 6개로 설정해도 4개만 놓았으면 4개가 상한이다.
+        private int UnlockableTableCount => Mathf.Min(maxTableCount, tables.Count);
 
         protected override void OnDestroy()
         {
@@ -157,16 +183,29 @@ namespace _001_Scripts._001_Manager
             return count;
         }
 
+        public int GetTableCount() => unlockedTableCount;
+
+        public int GetMaxTableCount() => UnlockableTableCount;
+
+        // 상점의 '테이블 추가' 업그레이드가 부른다. 상한에 닿았으면 false.
+        public bool TryUnlockTable()
+        {
+            if (unlockedTableCount >= UnlockableTableCount)
+            {
+                return false;
+            }
+
+            SetUnlockedTableCount(unlockedTableCount + 1);
+            Debug.Log($"[Hall] 테이블 추가: {unlockedTableCount} / {UnlockableTableCount}");
+            return true;
+        }
+
+        // 잠긴 테이블은 없는 셈 친다. 아래 조회들이 전부 열린 것만 본다.
         public IReadOnlyList<TableSnapshot> GetTables()
         {
-            List<TableSnapshot> result = new(tables.Count);
-            foreach (DiningTable table in tables)
+            List<TableSnapshot> result = new(unlockedTableCount);
+            foreach (DiningTable table in UnlockedTables())
             {
-                if (table == null)
-                {
-                    continue;
-                }
-
                 int free = 0;
                 int dirty = 0;
                 foreach (Seat seat in table.Seats)
@@ -196,13 +235,8 @@ namespace _001_Scripts._001_Manager
         public int GetFreeSeatCount()
         {
             int count = 0;
-            foreach (DiningTable table in tables)
+            foreach (DiningTable table in UnlockedTables())
             {
-                if (table == null)
-                {
-                    continue;
-                }
-
                 foreach (Seat seat in table.Seats)
                 {
                     if (seat != null && seat.IsFree)
@@ -213,6 +247,17 @@ namespace _001_Scripts._001_Manager
             }
 
             return count;
+        }
+
+        private IEnumerable<DiningTable> UnlockedTables()
+        {
+            for (int i = 0; i < unlockedTableCount && i < tables.Count; i++)
+            {
+                if (tables[i] != null)
+                {
+                    yield return tables[i];
+                }
+            }
         }
 
         public int GetReputation() => ReputationManager.Instance != null ? ReputationManager.Instance.Current : 0;
@@ -304,6 +349,18 @@ namespace _001_Scripts._001_Manager
 
         private void OnValidate()
         {
+            maxTableCount = Mathf.Max(1, maxTableCount);
+            startingTableCount = Mathf.Clamp(startingTableCount, 1, maxTableCount);
+
+            if (tables.Count > maxTableCount)
+            {
+                Debug.LogWarning($"{name}: 테이블을 {tables.Count}개 넣었지만 최대치가 {maxTableCount}개라 뒤쪽은 영영 안 열립니다.", this);
+            }
+            else if (tables.Count < startingTableCount)
+            {
+                Debug.LogWarning($"{name}: 시작 테이블이 {startingTableCount}개인데 씬에 {tables.Count}개만 연결됐습니다.", this);
+            }
+
             foreach (ItemBase dish in menu)
             {
                 if (dish != null && dish.Category != ItemCategory.Dish)

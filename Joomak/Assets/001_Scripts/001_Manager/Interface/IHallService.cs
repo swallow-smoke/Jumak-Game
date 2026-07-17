@@ -15,8 +15,14 @@ namespace _001_Scripts._001_Manager.Interface
         int GetOrderCount(HallOrderStatus status);
 
         // --- Table / Seat ---
+        // 테이블은 씬에 미리 다 놓여 있고 앞에서부터 열린다. 잠긴 테이블은 아래 조회에 안 잡힌다.
         IReadOnlyList<TableSnapshot> GetTables();
         int GetFreeSeatCount();
+        int GetTableCount();
+        int GetMaxTableCount();
+
+        // 상점의 '테이블 추가' 업그레이드용. 상한에 닿았으면 false.
+        bool TryUnlockTable();
 
         // --- Reputation ---
         int GetReputation();
