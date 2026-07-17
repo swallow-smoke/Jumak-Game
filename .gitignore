@@ -89,6 +89,22 @@ playground.xcworkspace
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
 
+# Plugin binaries under Assets (e.g. Assets/Plugins/.../DOTween.dll) are shipped assets,
+# not C++/C# build output, and must stay tracked even though *.dll/*.so/*.a/*.lib above
+# are ignored for this repo's native/C# build artifacts.
+# (The Unity project root is Joomak/, not this .gitignore's own directory, so both
+# forms are listed in case that layout ever changes.)
+!/[Aa]ssets/**/*.dll
+!/[Aa]ssets/**/*.so
+!/[Aa]ssets/**/*.dylib
+!/[Aa]ssets/**/*.a
+!/[Aa]ssets/**/*.lib
+!Joomak/[Aa]ssets/**/*.dll
+!Joomak/[Aa]ssets/**/*.so
+!Joomak/[Aa]ssets/**/*.dylib
+!Joomak/[Aa]ssets/**/*.a
+!Joomak/[Aa]ssets/**/*.lib
+
 # Build output
 *.apk
 *.aab
