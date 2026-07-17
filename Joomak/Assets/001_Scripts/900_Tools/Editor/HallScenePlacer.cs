@@ -107,7 +107,7 @@ namespace _001_Scripts._900_Tools.Editor
             Require(customerPrefab, "Customer.prefab");
 
             SerializedObject data = new(hall);
-            data.FindProperty("customerPrefab").objectReferenceValue = customerPrefab;
+            SetObjectArray(data.FindProperty("customerPrefabs"), new[] { customerPrefab });
             data.FindProperty("entrance").objectReferenceValue = entrance;
 
             // 기획서 9번 1라운드는 20초지만, 지금은 손님이 오는 걸 눈으로 보려고 짧게 둔다.

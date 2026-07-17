@@ -34,7 +34,14 @@ namespace _001_Scripts._002_Controller
         [SerializeField, Min(0f)] private float interactionRadius = 1.2f;
         [SerializeField] private LayerMask interactionLayer = ~0;
 
+        [Header("Broom Swing")]
+        [Tooltip("빗자루를 들고 있을 때 상호작용 키를 누르면 정밀 조준 대신 이 반경의 부채꼴로 휘두른다.")]
+        [SerializeField, Min(0f)] private float broomSwingRadius = 1.6f;
+        [Tooltip("바라보는 방향 기준 좌우로 이 각도 안에 있으면 맞는다.")]
+        [SerializeField, Range(0f, 180f)] private float broomSwingHalfAngle = 60f;
+
         private readonly RaycastHit2D[] interactionHits = new RaycastHit2D[24];
+        private readonly Collider2D[] broomSwingHits = new Collider2D[8];
         private Rigidbody2D body;
         private ISingleItemCarrier carrier;
         private Vector2 moveInput;
@@ -117,17 +124,53 @@ namespace _001_Scripts._002_Controller
 
         private void TryInteract()
         {
-            if (focusedInteractable != null)
+            // 빗자루를 든 동안엔 정밀 조준 대신 바라보는 방향으로 휘둘러서 부채꼴 안의 진상 손님을 전부 때린다.
+            // 맞은 대상이 하나도 없으면(휘둘렀는데 허공) 평소처럼 내려놓기로 넘어간다.
+            if (InteractionRules.IsHoldingBroom(carrier) && TrySwingBroom())
             {
-                if (InteractionRules.CanInteract(carrier, focusedInteractable))
-                {
-                    focusedInteractable.Interact(gameObject);
-                }
+                return;
+            }
 
+            // 포커스한 대상이 있어도 실제로 상호작용이 안 먹히면(예: 빗자루 든 채 일반 구조물을 봄)
+            // 그냥 멈추지 않고 들고 있는 걸 내려놓는 쪽으로 넘어간다.
+            if (focusedInteractable != null && InteractionRules.CanInteract(carrier, focusedInteractable))
+            {
+                focusedInteractable.Interact(gameObject);
                 return;
             }
 
             InteractionRules.TryDropHeldItem(carrier, body.position + lookDirection * 0.6f);
+        }
+
+        private bool TrySwingBroom()
+        {
+            int hitCount = Physics2D.OverlapCircle(body.position, broomSwingRadius, interactionFilter, broomSwingHits);
+            bool hitAny = false;
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider2D hit = broomSwingHits[i];
+                if (hit == null || hit.transform == transform || hit.transform.IsChildOf(transform))
+                {
+                    continue;
+                }
+
+                Vector2 toTarget = (Vector2)hit.transform.position - body.position;
+                if (toTarget.sqrMagnitude > 0.0001f && Vector2.Angle(lookDirection, toTarget) > broomSwingHalfAngle)
+                {
+                    continue;
+                }
+
+                if (hit.GetComponentInParent<IBroomTarget>() is not { RequiresBroom: true } target)
+                {
+                    continue;
+                }
+
+                target.Interact(gameObject);
+                hitAny = true;
+            }
+
+            return hitAny;
         }
 
         private void FixedUpdate()
@@ -272,6 +315,14 @@ namespace _001_Scripts._002_Controller
             Gizmos.color = Color.yellow;
             Vector2 direction = Application.isPlaying ? lookDirection : Vector2.down;
             Gizmos.DrawLine(transform.position, (Vector2)transform.position + direction * interactionRadius);
+
+            Gizmos.color = new Color(0.9f, 0.5f, 0.1f, 0.6f);
+            Vector3 origin = transform.position;
+            Quaternion leftEdge = Quaternion.Euler(0f, 0f, broomSwingHalfAngle);
+            Quaternion rightEdge = Quaternion.Euler(0f, 0f, -broomSwingHalfAngle);
+            Gizmos.DrawLine(origin, origin + leftEdge * (Vector3)direction * broomSwingRadius);
+            Gizmos.DrawLine(origin, origin + rightEdge * (Vector3)direction * broomSwingRadius);
+            Gizmos.DrawWireSphere(origin, broomSwingRadius);
         }
     }
 }

@@ -17,7 +17,8 @@ namespace _001_Scripts._001_Manager
     public sealed class HallManager : SinManagerBase<HallManager>, IHallService
     {
         [Header("Spawn")]
-        [SerializeField] private Customer customerPrefab;
+        [Tooltip("손님 프리팹 여러 종류(생김새 다른 손님 등)를 넣으면 스폰할 때마다 순서대로 번갈아 쓴다.")]
+        [SerializeField] private List<Customer> customerPrefabs = new();
         [SerializeField] private CustomerEntrance entrance;
         [SerializeField, Min(1f)] private float spawnInterval = 20f;
 
@@ -31,12 +32,19 @@ namespace _001_Scripts._001_Manager
         [SerializeField] private List<ItemBase> menu = new();
         [SerializeField] private CustomerPatienceSettings patience = new();
 
+        [Tooltip("dishId로 레시피(이미지/재료 목록)를 찾아야 하는 UI(OrderPanel 등)가 쓴다.")]
+        [SerializeField] private RecipeDB recipeDatabase;
+
         private readonly List<Customer> customers = new();
         private readonly List<OrderRecord> orders = new();
         private readonly MessageSubscriptionBag subscriptions = new();
         private float spawnTimer;
         private int unlockedTableCount;
         private RunState runState;
+        private int nextCustomerPrefabIndex;
+
+        // 주문서 UI(OrderPanel)가 새 주문이 들어올 때마다 이걸로 알아챈다.
+        public event Action<OrderSnapshot> OrderCreated;
 
         public override void Initialize()
         {
@@ -111,7 +119,9 @@ namespace _001_Scripts._001_Manager
             string dishId = customer.OrderedDish.ItemId;
             BaseMessage message = HallMessagePort.RequestOrder(customer.CustomerId, dishId, patience.FoodSeconds, sender);
             Guid orderId = message.GetData<OrderRequestedMsgData>().OrderId;
-            orders.Add(new OrderRecord(orderId, dishId, customer));
+            OrderRecord record = new(orderId, dishId, customer);
+            orders.Add(record);
+            OrderCreated?.Invoke(ToSnapshot(record));
             return orderId;
         }
 
@@ -337,7 +347,7 @@ namespace _001_Scripts._001_Manager
 
         private void TrySpawnCustomer()
         {
-            if (customerPrefab == null || entrance == null || menu.Count == 0)
+            if (customerPrefabs.Count == 0 || entrance == null || menu.Count == 0)
             {
                 return;
             }
@@ -347,14 +357,45 @@ namespace _001_Scripts._001_Manager
                 return;
             }
 
-            ItemBase dish = menu[UnityEngine.Random.Range(0, menu.Count)];
-
             // 기획서 9번: 손놈 발생 확률은 손님 단위로 굴린다.
             bool rowdy = EventManager.Instance != null && EventManager.Instance.Settings.RollRowdy();
 
-            Customer customer = Instantiate(customerPrefab, entrance.SpawnPosition, Quaternion.identity);
-            customer.Initialize(this, patience, dish, waitSpot, entrance.ExitPosition, rowdy);
+            Customer customer = Instantiate(GetNextCustomerPrefab(), entrance.SpawnPosition, Quaternion.identity);
+            customer.Initialize(this, patience, waitSpot, entrance.ExitPosition, rowdy);
             customers.Add(customer);
+        }
+
+        // 손님 프리팹이 여러 종류면 스폰할 때마다 순서대로 번갈아 쓴다 (매번 같은 손님만 나오지 않게).
+        private Customer GetNextCustomerPrefab()
+        {
+            Customer prefab = customerPrefabs[nextCustomerPrefabIndex];
+            nextCustomerPrefabIndex = (nextCustomerPrefabIndex + 1) % customerPrefabs.Count;
+            return prefab;
+        }
+
+        // 손님은 착석 후 주문을 결정하는 시점에 이걸 불러 메뉴(=해금된 레시피 목록) 중 하나를 뽑는다.
+        public bool TryGetRandomMenuItem(out ItemBase dish)
+        {
+            if (menu.Count == 0)
+            {
+                dish = null;
+                return false;
+            }
+
+            dish = menu[UnityEngine.Random.Range(0, menu.Count)];
+            return true;
+        }
+
+        // OrderPanel처럼 dishId만 들고 있는 UI가 주문서에 띄울 이미지/재료 목록을 찾을 때 쓴다.
+        public bool TryGetRecipe(string dishId, out RecipeData recipe)
+        {
+            if (recipeDatabase == null)
+            {
+                recipe = null;
+                return false;
+            }
+
+            return recipeDatabase.TryGetByDishId(dishId, out recipe);
         }
 
         private int CountWaitingCustomers()

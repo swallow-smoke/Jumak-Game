@@ -15,6 +15,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
     public sealed class Customer : BaseEntity, IBroomTarget
     {
         private const int TimeoutPenalty = 5;
+        private const int UnsatisfiedLeavePenalty = 3;
         private const float FallbackResolveSeconds = 30f;
         private const float FallbackTelegraphSeconds = 3f;
 
@@ -57,8 +58,10 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         private Vector3 waitPosition;
         private Vector3 exitPosition;
         private float stateTimer;
-        private float seatTimer;
+        private float decideDurationSeconds;
         private float eatDuration;
+        private float satisfaction;
+        private float satisfactionDecayPerSecond;
         private int remainingHits;
 
         public CustomerState State { get; private set; } = CustomerState.WaitingForSeat;
@@ -66,6 +69,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         public bool HasPaid { get; private set; }
         public Guid OrderId { get; private set; }
         public string CustomerId => ObjectId.ToString();
+        public float Satisfaction => satisfaction;
 
         // 손놈은 자리에 앉지 않지만 입구 자리를 차지하고 난동을 부린다.
         public bool OccupiesWaitingSpot =>
@@ -76,6 +80,11 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
         // 남은 연타 횟수. 손놈 5회 / 먹튀 1회 (기획서 8번)
         public int RemainingHits => remainingHits;
+
+        // 만족도가 실제로 깎이고 확인되는 구간. 식사가 시작되면(대접받은 순간 평판 계산이 끝났으므로) 더 이상 중요하지 않다.
+        private bool IsSatisfactionActive =>
+            State is CustomerState.WaitingForSeat or CustomerState.Following or CustomerState.WalkingToSeat
+                or CustomerState.Deciding or CustomerState.ReadyToOrder or CustomerState.WaitingForFood;
 
         private static HallEventSettings EventSettings =>
             EventManager.Instance != null ? EventManager.Instance.Settings : null;
@@ -108,22 +117,22 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         public void Initialize(
             HallManager hallManager,
             CustomerPatienceSettings patienceSettings,
-            ItemBase dish,
             Vector3 waitSpot,
             Vector3 exitSpot,
             bool startsRowdy = false)
         {
             hall = hallManager;
             patience = patienceSettings;
-            orderedDish = dish;
             waitPosition = waitSpot;
             exitPosition = exitSpot;
-            name = $"Customer_{dish?.DisplayName ?? "None"}";
+            satisfaction = patience.StartingSatisfaction;
+            satisfactionDecayPerSecond = patience.RandomSatisfactionDecayPerSecond;
+            name = "Customer";
 
             if (startsRowdy)
             {
                 remainingHits = EventSettings?.RowdyHits ?? 5;
-                name = $"손놈_{dish?.DisplayName ?? "None"}";
+                name = "손놈";
                 SetState(CustomerState.Rowdy);
                 return;
             }
@@ -140,48 +149,49 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
             stateTimer += Time.deltaTime;
 
+            if (IsSatisfactionActive)
+            {
+                satisfaction = Mathf.Max(0f, satisfaction - satisfactionDecayPerSecond * Time.deltaTime);
+                if (satisfaction <= 0f)
+                {
+                    LeaveAngry("만족도가 바닥나 자동 퇴장", UnsatisfiedLeavePenalty);
+                    return;
+                }
+            }
+
             switch (State)
             {
                 case CustomerState.WaitingForSeat:
                     MoveTowards(waitPosition);
-                    TickSeatPatience();
                     break;
 
                 case CustomerState.Following:
                     FollowEscort();
-                    TickSeatPatience();
                     break;
 
                 case CustomerState.WalkingToSeat:
                     if (MoveTowards(seat.SitPosition))
                     {
+                        decideDurationSeconds = patience.RandomDecideSeconds;
                         SetState(CustomerState.Deciding);
                     }
 
                     break;
 
                 case CustomerState.Deciding:
-                    if (stateTimer >= patience.DecideSeconds)
+                    if (stateTimer >= decideDurationSeconds)
                     {
-                        SetState(CustomerState.ReadyToOrder);
+                        DecideOrder();
                     }
 
                     break;
 
                 case CustomerState.ReadyToOrder:
-                    if (stateTimer >= patience.OrderSeconds)
-                    {
-                        LeaveAngry("주문을 받지 않음");
-                    }
-
+                    // 플레이어가 와서 상호작용해줄 때까지 기다린다. 너무 오래 걸리면 위의 만족도가 0이 되어 알아서 나간다.
                     break;
 
                 case CustomerState.WaitingForFood:
-                    if (stateTimer >= patience.FoodSeconds)
-                    {
-                        LeaveAngry("음식이 나오지 않음");
-                    }
-
+                    // ReadyToOrder와 마찬가지로 만족도가 실질적인 제한시간 역할을 한다.
                     break;
 
                 case CustomerState.Eating:
@@ -211,7 +221,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     }
 
                     // 계산 없이 입구로 직행. 나가기 전에 잡아야 한다.
-                    if (MoveTowards(exitPosition))
+                    if (MoveTowards(exitPosition, avoidCustomers: true))
                     {
                         Penalize("먹튀 손님을 놓침");
                         Despawn();
@@ -220,7 +230,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     break;
 
                 case CustomerState.Leaving:
-                    if (MoveTowards(exitPosition))
+                    if (MoveTowards(exitPosition, avoidCustomers: true))
                     {
                         Despawn();
                     }
@@ -300,6 +310,28 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             SetState(CustomerState.Following);
         }
 
+        // 착석 후 얼마간 고민하다가 실제로 주문할지 말지를 정한다.
+        // 손님 여럿이 한 테이블에 앉아도 전부 다 주문하는 건 아니다 - 각자 따로 굴린다.
+        private void DecideOrder()
+        {
+            if (UnityEngine.Random.value <= patience.OrderChance && hall != null && hall.TryGetRandomMenuItem(out ItemBase dish))
+            {
+                orderedDish = dish;
+                name = $"Customer_{dish.DisplayName}";
+                SetState(CustomerState.ReadyToOrder);
+                return;
+            }
+
+            // 주문 없이 조용히 나간다. 손님 잘못이 아니므로 페널티는 없다.
+            if (seat != null)
+            {
+                seat.Release(this);
+                seat = null;
+            }
+
+            SetState(CustomerState.Leaving);
+        }
+
         private void PlaceOrder(GameObject interactor)
         {
             if (hall == null || orderedDish == null)
@@ -323,16 +355,34 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
             hall.UpdateOrderStatus(OrderId, HallOrderStatus.Served);
             OrderId = Guid.Empty;
+            ApplySatisfactionReputation();
             eatDuration = patience.RandomEatSeconds;
             SetState(CustomerState.Eating);
         }
 
-        private void TickSeatPatience()
+        // 대접받는 순간의 만족도에 따라 명성이 오르내린다.
+        private void ApplySatisfactionReputation()
         {
-            seatTimer += Time.deltaTime;
-            if (seatTimer >= patience.SeatSeconds)
+            if (ReputationManager.Instance == null)
             {
-                LeaveAngry("자리로 안내하지 않음");
+                return;
+            }
+
+            if (satisfaction >= 90f)
+            {
+                ReputationManager.Instance.Restore(4);
+            }
+            else if (satisfaction >= 50f)
+            {
+                ReputationManager.Instance.Restore(2);
+            }
+            else if (satisfaction >= 30f)
+            {
+                ReputationManager.Instance.Restore(1);
+            }
+            else if (satisfaction >= 10f)
+            {
+                ReputationManager.Instance.Penalize(1, $"{name} - 만족도 낮은 상태로 서빙 (만족도 {satisfaction:F0})");
             }
         }
 
@@ -383,17 +433,19 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             return true;
         }
 
-        private void Penalize(string reason)
+        private void Penalize(string reason) => Penalize(TimeoutPenalty, reason);
+
+        private void Penalize(int amount, string reason)
         {
             if (ReputationManager.Instance != null)
             {
-                ReputationManager.Instance.Penalize(TimeoutPenalty, $"{name} - {reason}");
+                ReputationManager.Instance.Penalize(amount, $"{name} - {reason}");
             }
         }
 
-        private void LeaveAngry(string reason)
+        private void LeaveAngry(string reason, int penalty = TimeoutPenalty)
         {
-            Penalize(reason);
+            Penalize(penalty, reason);
 
             if (OrderId != Guid.Empty)
             {
@@ -434,7 +486,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             MoveTowards(target + toSelf.normalized * followDistance);
         }
 
-        private bool MoveTowards(Vector3 target)
+        private bool MoveTowards(Vector3 target, bool avoidCustomers = false)
         {
             Vector2 current = transform.position;
             Vector2 toTarget = (Vector2)target - current;
@@ -442,7 +494,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
             if (distance > arriveThreshold)
             {
-                Vector2 direction = SteerAroundStructures(current, toTarget / distance, distance);
+                Vector2 direction = SteerAroundStructures(current, toTarget / distance, distance, avoidCustomers);
                 Vector2 step = direction * (moveSpeed * Time.deltaTime);
                 if (step.sqrMagnitude > distance * distance)
                 {
@@ -458,7 +510,8 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
         // 손님은 물리로 움직이지 않으므로(transform 직접 이동) 콜라이더가 막아주지 않는다.
         // 그래서 진행 방향을 미리 훑어 테이블/카운터에 부딪힐 것 같으면 표면을 따라 미끄러진다.
-        private Vector2 SteerAroundStructures(Vector2 origin, Vector2 direction, float distanceToTarget)
+        // avoidCustomers가 true면(퇴장/먹튀 도주 중) 다른 손님도 장애물로 취급해 서로 부딪히지 않는다.
+        private Vector2 SteerAroundStructures(Vector2 origin, Vector2 direction, float distanceToTarget, bool avoidCustomers)
         {
             // 목표 지점까지만 본다. 더 멀리 보면 좌석 뒤에 있는 테이블을 피하려다 좌석에 못 앉는다.
             float lookAhead = Mathf.Min(avoidLookAhead, distanceToTarget);
@@ -472,8 +525,10 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     continue;
                 }
 
-                // 막는 건 구조물(테이블·서빙카운터·촛불)뿐. 다른 손님이나 바닥 아이템은 그냥 지나간다.
-                if (hit.collider.GetComponentInParent<BaseStructure>() == null)
+                bool blocksMovement = hit.collider.GetComponentInParent<BaseStructure>() != null ||
+                                      (avoidCustomers && hit.collider.GetComponentInParent<Customer>() != null);
+
+                if (!blocksMovement)
                 {
                     continue;
                 }
