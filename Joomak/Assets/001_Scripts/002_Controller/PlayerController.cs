@@ -13,6 +13,7 @@ namespace _001_Scripts._002_Controller
     {
         [Header("Movement")]
         [SerializeField, Min(0f)] private float moveSpeed = 5f;
+        [SerializeField, Min(0f)] private float rotationLerpSpeed = 10f;
 
         [Header("Key Map")]
         [SerializeField] private Key moveUpKey = Key.W;
@@ -20,6 +21,8 @@ namespace _001_Scripts._002_Controller
         [SerializeField] private Key moveLeftKey = Key.A;
         [SerializeField] private Key moveRightKey = Key.D;
         [SerializeField] private Key interactKey = Key.Space;
+        [SerializeField] private Key scrollUpKey = Key.UpArrow;
+        [SerializeField] private Key scrollDownKey = Key.DownArrow;
 
         [Header("Interaction")]
         [SerializeField, Min(0f)] private float interactionRadius = 1.2f;
@@ -59,7 +62,6 @@ namespace _001_Scripts._002_Controller
             if (moveInput.sqrMagnitude > 0f)
             {
                 lookDirection = moveInput.normalized;
-                carrier.SetFacingDirection(lookDirection);
             }
 
             UpdateFocusedObject();
@@ -67,6 +69,18 @@ namespace _001_Scripts._002_Controller
             if (keyboard[interactKey].wasPressedThisFrame)
             {
                 TryInteract();
+            }
+
+            if (focusedInteractable is IScrollSelectable scrollSelectable)
+            {
+                if (keyboard[scrollUpKey].wasPressedThisFrame)
+                {
+                    scrollSelectable.Scroll(1);
+                }
+                else if (keyboard[scrollDownKey].wasPressedThisFrame)
+                {
+                    scrollSelectable.Scroll(-1);
+                }
             }
         }
 
@@ -89,6 +103,11 @@ namespace _001_Scripts._002_Controller
         {
             Vector2 nextPosition = body.position + moveInput * (moveSpeed * Time.fixedDeltaTime);
             body.MovePosition(nextPosition);
+
+            // 스프라이트 기본 방향(위)을 기준으로 바라보는 방향까지 서서히 회전시킨다.
+            float targetAngle = Vector2.SignedAngle(Vector2.up, lookDirection);
+            float smoothedAngle = Mathf.LerpAngle(body.rotation, targetAngle, rotationLerpSpeed * Time.fixedDeltaTime);
+            body.MoveRotation(smoothedAngle);
         }
 
         private void OnDisable()

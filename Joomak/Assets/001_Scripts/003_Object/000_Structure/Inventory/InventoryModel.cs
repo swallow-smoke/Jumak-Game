@@ -13,6 +13,20 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
 
         public IReadOnlyList<ItemStack> Stacks => stacks;
 
+        public int CountOf(ItemBase item)
+        {
+            int total = 0;
+            foreach (ItemStack stack in stacks)
+            {
+                if (stack.Item == item)
+                {
+                    total += stack.Amount;
+                }
+            }
+
+            return total;
+        }
+
         public bool Contains(ItemBase item, int amount)
         {
             if (item == null || amount <= 0)

@@ -59,17 +59,5 @@ namespace _001_Scripts._003_Object._001_Entity.Item
             droppedItem.SetWorldPosition(worldPosition);
             return true;
         }
-
-        // 플레이어가 바라보는 방향으로 손에 든 아이템을 회전시킨다. 기본 바라보는 방향(아래)일 때 회전이 없도록 down을 기준으로 잡는다.
-        public void SetFacingDirection(Vector2 direction)
-        {
-            if (direction.sqrMagnitude < 0.0001f)
-            {
-                return;
-            }
-
-            float angle = Vector2.SignedAngle(Vector2.down, direction);
-            handPoint.localRotation = Quaternion.Euler(0f, 0f, angle);
-        }
     }
 }

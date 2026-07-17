@@ -12,12 +12,14 @@ namespace _001_Scripts._005_Data._000_Item
         [SerializeField] private List<ItemAmount> ingredients = new();
         [SerializeField] private ItemAmount result;
         [SerializeField, Min(0.1f)] private float cookTime = 3f;
+        [SerializeField, Min(0f)] private float interactReduceSeconds = 1f;
 
         public string RecipeId => recipeId;
         public CookingStationType StationType => stationType;
         public IReadOnlyList<ItemAmount> Ingredients => ingredients;
         public ItemAmount Result => result;
         public float CookTime => cookTime;
+        public float InteractReduceSeconds => interactReduceSeconds;
 
         public bool CanCraft(InventoryModel inventory)
         {
