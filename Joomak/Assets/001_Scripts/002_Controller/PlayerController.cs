@@ -59,6 +59,7 @@ namespace _001_Scripts._002_Controller
             if (moveInput.sqrMagnitude > 0f)
             {
                 lookDirection = moveInput.normalized;
+                carrier.SetFacingDirection(lookDirection);
             }
 
             UpdateFocusedObject();
