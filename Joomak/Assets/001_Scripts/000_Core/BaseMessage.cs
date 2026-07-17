@@ -1,19 +1,19 @@
-﻿using _001_Scripts._000_Core.MessageData;
-using UnityEngine;
+using System;
+using _001_Scripts._000_Core.MessageData;
 
 namespace _001_Scripts._000_Core
 {
     public readonly struct BaseMessage
     {
-        public readonly string MessageName;
-        public readonly GUID id;
-        public readonly BaseMsgData data;
-        
-        public BaseMessage(string messageName, GUID id, BaseMsgData data)
+        public readonly Guid Id;
+        public readonly BaseMsgData Data;
+
+        public BaseMessage(BaseMsgData data)
         {
-            MessageName = messageName;
-            this.id = id;
-            this.data = data;
+            Id = Guid.NewGuid();
+            Data = data;
         }
+
+        public T GetData<T>() where T : BaseMsgData => Data as T;
     }
 }

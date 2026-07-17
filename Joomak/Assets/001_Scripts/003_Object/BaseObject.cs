@@ -5,30 +5,15 @@ namespace _001_Scripts._003_Object
 {
     public abstract class BaseObject : MonoBehaviour
     {
-        [SerializeField] private string objectId;
-        [SerializeField] private string displayName;
+        private Guid _objectId;
 
-        public string ObjectId => objectId;
-        public string DisplayName => displayName;
+        public Guid ObjectId => _objectId;
+        public string ObjectName => name;
         public Vector2 Position => transform.position;
 
-        protected virtual void Reset()
+        protected virtual void Awake()
         {
-            EnsureObjectId();
-            displayName = gameObject.name;
-        }
-
-        protected virtual void OnValidate()
-        {
-            EnsureObjectId();
-        }
-
-        private void EnsureObjectId()
-        {
-            if (string.IsNullOrWhiteSpace(objectId))
-            {
-                objectId = Guid.NewGuid().ToString("N");
-            }
+            _objectId = Guid.NewGuid();
         }
     }
 }
