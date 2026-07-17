@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc8c4ad613d27f747afd0b886370917f, type: 3}
-  m_Name: soybean_soup
+  m_Name: bean_paste
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._005_Data._000_Item.ItemData
-  itemId: soybean_soup
-  displayName: "\uB41C\uC7A5\uAD6D"
-  category: 1
-  processingLevel: 2
+  itemId: soybean_paste
+  displayName: "\uB41C\uC7A5"
+  category: 0
+  processingLevel: 0
   maxStack: 99
-  price: 8
-  worldPrefab: {fileID: 659283373436972539, guid: 5f6cf7473a5cbda4c9139369195803ee, type: 3}
+  price: 0
+  worldPrefab: {fileID: 3964639434164317937, guid: e44c5ff6bbaa0df42a244471245de08e, type: 3}

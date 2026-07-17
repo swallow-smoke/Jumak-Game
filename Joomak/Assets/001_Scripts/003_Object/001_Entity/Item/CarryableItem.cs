@@ -3,10 +3,14 @@ using UnityEngine;
 
 namespace _001_Scripts._003_Object._001_Entity.Item
 {
+    [RequireComponent(typeof(Collider2D), typeof(Rigidbody2D))]
     public abstract class CarryableItem : BaseEntity, IPickable
     {
+        [SerializeField] private Vector3 carriedScale = Vector3.one;
+
         private Collider2D[] itemColliders;
         private Rigidbody2D[] itemBodies;
+        private Vector3 groundScale;
 
         public bool IsCarried { get; private set; }
 
@@ -15,6 +19,7 @@ namespace _001_Scripts._003_Object._001_Entity.Item
             base.Awake();
             itemColliders = GetComponentsInChildren<Collider2D>(true);
             itemBodies = GetComponentsInChildren<Rigidbody2D>(true);
+            groundScale = transform.localScale;
         }
 
         public void Interact(GameObject interactor)
@@ -36,6 +41,7 @@ namespace _001_Scripts._003_Object._001_Entity.Item
             transform.SetParent(handPoint, false);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
+            transform.localScale = carriedScale;
 
             SetPhysicsEnabled(false);
         }
@@ -44,6 +50,7 @@ namespace _001_Scripts._003_Object._001_Entity.Item
         {
             transform.SetParent(null, true);
             transform.position = worldPosition;
+            transform.localScale = groundScale;
             IsCarried = false;
 
             SetPhysicsEnabled(true);

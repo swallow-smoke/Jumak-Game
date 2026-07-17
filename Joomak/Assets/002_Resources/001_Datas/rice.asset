@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: rice
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._005_Data._000_Item.ItemData
   itemId: rice
-  displayName: "\uC300\uBC25"
-  category: 1
-  processingLevel: 1
+  displayName: "\uC300"
+  category: 0
+  processingLevel: 0
   maxStack: 99
-  price: 5
-  worldPrefab: {fileID: 5293276979143101140, guid: e41438fdb6fd67a47b4f6cc2032851a5, type: 3}
+  price: 0
+  worldPrefab: {fileID: 2906291549630532942, guid: 6fa1ef1a940777840b7097ddc0275748, type: 3}

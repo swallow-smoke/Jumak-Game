@@ -59,6 +59,7 @@ namespace _001_Scripts._002_Controller
             if (moveInput.sqrMagnitude > 0f)
             {
                 lookDirection = moveInput.normalized;
+                carrier.SetFacingDirection(lookDirection);
             }
 
             UpdateFocusedObject();
@@ -81,8 +82,7 @@ namespace _001_Scripts._002_Controller
                 return;
             }
 
-            // 아무것도 바라보고 있지 않으면 들고 있던 빗자루를 발 앞에 내려놓는다.
-            InteractionRules.TryDropBroom(carrier, body.position + lookDirection * 0.6f);
+            InteractionRules.TryDropHeldItem(carrier, body.position + lookDirection * 0.6f);
         }
 
         private void FixedUpdate()

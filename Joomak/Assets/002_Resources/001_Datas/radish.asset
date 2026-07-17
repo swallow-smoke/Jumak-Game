@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc8c4ad613d27f747afd0b886370917f, type: 3}
-  m_Name: kimchi
+  m_Name: radish
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._005_Data._000_Item.ItemData
-  itemId: kimchi
-  displayName: "\uAE40\uCE58"
-  category: 1
-  processingLevel: 1
+  itemId: radish
+  displayName: "\uBB34"
+  category: 0
+  processingLevel: 0
   maxStack: 99
-  price: 8
-  worldPrefab: {fileID: 3436330823229152346, guid: 24626ba833a7bf24aa1e56a0ca5af5ff, type: 3}
+  price: 0
+  worldPrefab: {fileID: 1061143981611679379, guid: 5dd2e505b2db1ea4e960a1436073a452, type: 3}
