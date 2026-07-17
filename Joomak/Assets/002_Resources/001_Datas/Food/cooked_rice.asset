@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc8c4ad613d27f747afd0b886370917f, type: 3}
-  m_Name: result_food_test
+  m_Name: cooked_rice
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._005_Data._000_Item.ItemData
-  itemId: gukbab
-  displayName: gukbab
-  category: 0
+  itemId: cooked_rice
+  displayName: "\uC300\uBC25"
+  category: 1
   processingLevel: 0
   maxStack: 99
   price: 0
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 9141586314950057403, guid: 7a0d55de723a372489565e1495b071b2, type: 3}

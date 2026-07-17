@@ -10,19 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe4df7cca5bcb8347b48f8b343eca7c4, type: 3}
-  m_Name: Gukbab
+  m_Name: Rice_Cake
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._005_Data._000_Item.RecipeData
-  recipeId: gukbab
+  recipeId: rice_cake
   stationType: 0
   ingredients:
-  - item: {fileID: 11400000, guid: 0bca63dd02c67314e86fedd78400610b, type: 2}
-    amount: 1
+  - item: {fileID: 11400000, guid: 878cf49184e5052478200f2637878a72, type: 2}
+    amount: 2
   - item: {fileID: 11400000, guid: 1f05bcfd661d57348a87cba161ce8dc5, type: 2}
     amount: 1
-  - item: {fileID: 11400000, guid: b6abc1c2e412e724291270b1ccbc7077, type: 2}
-    amount: 1
   result:
-    item: {fileID: 11400000, guid: 5b79c6e3b5474314e854b2bc3fe144f0, type: 2}
+    item: {fileID: 11400000, guid: a5bdca1b30d8982449ba04a7ed40a944, type: 2}
     amount: 1
   cookTime: 3
   interactReduceSeconds: 1
