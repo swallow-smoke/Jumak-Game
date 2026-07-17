@@ -101,6 +101,10 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         {
             base.Awake();
 
+            AudioClip defaultInteraction = Resources.Load<AudioClip>("006_Audio/interactionSound");
+            questionSfx ??= defaultInteraction;
+            exclamationSfx ??= defaultInteraction;
+
             orderIndicator = GetComponent<CustomerOrderIndicator>();
             if (orderIndicator == null)
             {

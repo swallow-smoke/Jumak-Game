@@ -18,4 +18,4 @@ MonoBehaviour:
   processingLevel: 0
   maxStack: 99
   price: 0
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 1251769798013690322, guid: 3121dc123da840649838f2c94f5b33c6, type: 3}

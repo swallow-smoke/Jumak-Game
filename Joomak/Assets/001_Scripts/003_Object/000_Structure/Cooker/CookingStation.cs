@@ -85,6 +85,10 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
         {
             base.Awake();
 
+            interactionSfx ??= Resources.Load<AudioClip>("006_Audio/interactionSound");
+            cookingLoopSfx ??= Resources.Load<AudioClip>("006_Audio/grill_sound");
+            EnsureCookingParticle();
+
             if (cookingAudioSource == null)
             {
                 cookingAudioSource = gameObject.AddComponent<AudioSource>();
@@ -110,6 +114,61 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             {
                 recipeLabel.gameObject.SetActive(false);
             }
+        }
+
+        private void EnsureCookingParticle()
+        {
+            if (cookingParticle != null)
+            {
+                return;
+            }
+
+            GameObject particleObject = new("Cooking Particle");
+            particleObject.transform.SetParent(transform, false);
+            particleObject.transform.localPosition = new Vector3(0f, 0.55f, -0.15f);
+
+            cookingParticle = particleObject.AddComponent<ParticleSystem>();
+            ParticleSystem.MainModule main = cookingParticle.main;
+            main.playOnAwake = false;
+            main.loop = true;
+            main.duration = 1.2f;
+            main.simulationSpace = ParticleSystemSimulationSpace.Local;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.8f, 1.35f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.28f, 0.62f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.12f, 0.25f);
+            main.maxParticles = 48;
+            main.startColor = stationType == CookingStationType.Griddle
+                ? new ParticleSystem.MinMaxGradient(new Color32(255, 119, 35, 220), new Color32(255, 220, 120, 200))
+                : new ParticleSystem.MinMaxGradient(new Color32(255, 250, 235, 190), new Color32(190, 205, 210, 145));
+
+            ParticleSystem.EmissionModule emission = cookingParticle.emission;
+            emission.rateOverTime = stationType == CookingStationType.Griddle ? 14f : 9f;
+
+            ParticleSystem.ShapeModule shape = cookingParticle.shape;
+            shape.shapeType = ParticleSystemShapeType.Circle;
+            shape.radius = stationType == CookingStationType.Griddle ? 0.34f : 0.24f;
+            shape.radiusThickness = 1f;
+
+            ParticleSystem.ColorOverLifetimeModule colorOverLifetime = cookingParticle.colorOverLifetime;
+            colorOverLifetime.enabled = true;
+            Gradient fade = new();
+            fade.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(Color.white, 0f),
+                    new GradientColorKey(new Color(1f, 0.82f, 0.62f), 1f)
+                },
+                new[]
+                {
+                    new GradientAlphaKey(0f, 0f),
+                    new GradientAlphaKey(0.9f, 0.16f),
+                    new GradientAlphaKey(0f, 1f)
+                });
+            colorOverLifetime.color = fade;
+
+            ParticleSystemRenderer particleRenderer = particleObject.GetComponent<ParticleSystemRenderer>();
+            particleRenderer.sortingOrder = 120;
+            cookingParticle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         }
 
         private void Update()

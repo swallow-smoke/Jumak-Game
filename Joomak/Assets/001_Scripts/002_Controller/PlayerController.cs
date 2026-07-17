@@ -1,3 +1,4 @@
+using _001_Scripts._001_Manager;
 using _001_Scripts._002_Controller.Interface;
 using _001_Scripts._003_Object.Interface;
 using _001_Scripts._003_Object._001_Entity.Item;
@@ -40,6 +41,7 @@ namespace _001_Scripts._002_Controller
         [SerializeField, Min(0f)] private float broomSwingRadius = 1.6f;
         [Tooltip("바라보는 방향 기준 좌우로 이 각도 안에 있으면 맞는다.")]
         [SerializeField, Range(0f, 180f)] private float broomSwingHalfAngle = 60f;
+        [SerializeField] private AudioClip broomSwingSfx;
 
         private readonly RaycastHit2D[] interactionHits = new RaycastHit2D[24];
         private readonly Collider2D[] broomSwingHits = new Collider2D[8];
@@ -78,6 +80,7 @@ namespace _001_Scripts._002_Controller
         {
             body = GetComponent<Rigidbody2D>();
             carrier = GetComponent<ISingleItemCarrier>();
+            broomSwingSfx ??= Resources.Load<AudioClip>("006_Audio/broom_stick");
             body.gravityScale = 0f;
             body.freezeRotation = true;
 
@@ -256,6 +259,11 @@ namespace _001_Scripts._002_Controller
 
                 target.Interact(gameObject);
                 hitAny = true;
+            }
+
+            if (hitAny)
+            {
+                AudioManager.Instance?.PlaySfx(broomSwingSfx);
             }
 
             return hitAny;

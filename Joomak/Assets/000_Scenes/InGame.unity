@@ -1134,6 +1134,14 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3935557025512610033, guid: 1299290546c9e2e4eb5e3074fc9adb60, type: 3}
+      propertyPath: cookingLoopSfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 1377dbf4a72953b4a850bd8ae55c0c3c, type: 3}
+    - target: {fileID: 3935557025512610033, guid: 1299290546c9e2e4eb5e3074fc9adb60, type: 3}
+      propertyPath: interactionSfx
+      value: 
+      objectReference: {fileID: 8300000, guid: dd525230c5f06254bb83711bf53796d9, type: 3}
+    - target: {fileID: 3935557025512610033, guid: 1299290546c9e2e4eb5e3074fc9adb60, type: 3}
       propertyPath: recipeBubbleRoot
       value: 
       objectReference: {fileID: 1313249841}
@@ -17147,6 +17155,7 @@ MonoBehaviour:
     m_Bits: 128
   broomSwingRadius: 1.6
   broomSwingHalfAngle: 60
+  broomSwingSfx: {fileID: 0}
 --- !u!114 &1927854297
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17402,6 +17411,7 @@ MonoBehaviour:
     m_Bits: 128
   broomSwingRadius: 1.6
   broomSwingHalfAngle: 60
+  broomSwingSfx: {fileID: 0}
 --- !u!114 &1932975264
 MonoBehaviour:
   m_ObjectHideFlags: 0

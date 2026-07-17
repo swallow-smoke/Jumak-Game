@@ -88,6 +88,9 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
         protected override void Awake()
         {
             base.Awake();
+            AudioClip defaultInteraction = Resources.Load<AudioClip>("006_Audio/interactionSound");
+            storeSfx ??= defaultInteraction;
+            takeSfx ??= defaultInteraction;
             UpdateItemDisplay();
         }
 

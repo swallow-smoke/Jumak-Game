@@ -114,6 +114,9 @@ MonoBehaviour:
   avoidLookAhead: 3.1
   visual: {fileID: 5162618077493740762}
   dineAndDashColor: {r: 0.9, g: 0.15, b: 0.15, a: 1}
+  rowdyColor: {r: 0.55, g: 0.15, b: 0.7, a: 1}
+  questionSfx: {fileID: 8300000, guid: dd525230c5f06254bb83711bf53796d9, type: 3}
+  exclamationSfx: {fileID: 8300000, guid: dd525230c5f06254bb83711bf53796d9, type: 3}
 --- !u!114 &8111997815285433024
 MonoBehaviour:
   m_ObjectHideFlags: 0

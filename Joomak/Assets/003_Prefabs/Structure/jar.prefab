@@ -111,6 +111,8 @@ MonoBehaviour:
   maxStack: 10
   itemDisplay: {fileID: 0}
   storedCount: 10
+  storeSfx: {fileID: 8300000, guid: dd525230c5f06254bb83711bf53796d9, type: 3}
+  takeSfx: {fileID: 8300000, guid: dd525230c5f06254bb83711bf53796d9, type: 3}
 --- !u!58 &5441974487623892948
 CircleCollider2D:
   m_ObjectHideFlags: 0

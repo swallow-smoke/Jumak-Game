@@ -250,6 +250,8 @@ MonoBehaviour:
   maxStack: 5
   itemDisplay: {fileID: 5273241035539658324}
   storedCount: 5
+  storeSfx: {fileID: 8300000, guid: dd525230c5f06254bb83711bf53796d9, type: 3}
+  takeSfx: {fileID: 8300000, guid: dd525230c5f06254bb83711bf53796d9, type: 3}
 --- !u!114 &-7082045661214639600
 MonoBehaviour:
   m_ObjectHideFlags: 0

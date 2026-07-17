@@ -15,6 +15,12 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
         [Header("Audio")]
         [SerializeField] private AudioClip unpackSfx;
 
+        protected override void Awake()
+        {
+            base.Awake();
+            unpackSfx ??= Resources.Load<AudioClip>("006_Audio/interactionSound");
+        }
+
         public override void Interact(GameObject interactor)
         {
             if (!interactor.TryGetComponent(out ISingleItemCarrier carrier) ||

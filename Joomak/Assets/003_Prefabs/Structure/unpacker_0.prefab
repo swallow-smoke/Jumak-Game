@@ -107,6 +107,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 943ac97bed998e14a9f745d573369b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._003_Object._000_Structure.Inventory.BundleUnpackingStation
+  unpackSfx: {fileID: 8300000, guid: dd525230c5f06254bb83711bf53796d9, type: 3}
 --- !u!61 &1152765546863050678
 BoxCollider2D:
   m_ObjectHideFlags: 0
