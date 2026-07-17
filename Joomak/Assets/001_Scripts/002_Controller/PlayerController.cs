@@ -13,6 +13,13 @@ namespace _001_Scripts._002_Controller
         [Header("Movement")]
         [SerializeField, Min(0f)] private float moveSpeed = 5f;
 
+        [Header("Key Map")]
+        [SerializeField] private Key moveUpKey = Key.W;
+        [SerializeField] private Key moveDownKey = Key.S;
+        [SerializeField] private Key moveLeftKey = Key.A;
+        [SerializeField] private Key moveRightKey = Key.D;
+        [SerializeField] private Key interactKey = Key.Space;
+
         [Header("Interaction")]
         [SerializeField, Min(0f)] private float interactionRadius = 1.2f;
         [SerializeField] private LayerMask interactionLayer = ~0;
@@ -53,7 +60,7 @@ namespace _001_Scripts._002_Controller
 
             UpdateFocusedObject();
 
-            if (keyboard.eKey.wasPressedThisFrame && focusedInteractable != null)
+            if (keyboard[interactKey].wasPressedThisFrame && focusedInteractable != null)
             {
                 focusedInteractable.Interact(gameObject);
             }
@@ -71,27 +78,27 @@ namespace _001_Scripts._002_Controller
             SetFocusedObject(null);
         }
 
-        private static Vector2 ReadMoveInput(Keyboard keyboard)
+        private Vector2 ReadMoveInput(Keyboard keyboard)
         {
             float horizontal = 0f;
             float vertical = 0f;
 
-            if (keyboard.aKey.isPressed)
+            if (keyboard[moveLeftKey].isPressed)
             {
                 horizontal -= 1f;
             }
 
-            if (keyboard.dKey.isPressed)
+            if (keyboard[moveRightKey].isPressed)
             {
                 horizontal += 1f;
             }
 
-            if (keyboard.sKey.isPressed)
+            if (keyboard[moveDownKey].isPressed)
             {
                 vertical -= 1f;
             }
 
-            if (keyboard.wKey.isPressed)
+            if (keyboard[moveUpKey].isPressed)
             {
                 vertical += 1f;
             }
