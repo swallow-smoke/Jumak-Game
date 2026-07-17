@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using _001_Scripts._003_Object._000_Structure.Cooker;
 using _001_Scripts._003_Object.Interface;
 using _001_Scripts._004_UI.Components;
-using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace _001_Scripts._900_Tools.Editor
 {
@@ -50,7 +50,7 @@ namespace _001_Scripts._900_Tools.Editor
                 Font font = AssetDatabase.LoadAssetAtPath<Font>(FontPath);
                 UnityEngine.UI.Text text = GetOrCreateText(root.transform, background);
                 text.font = font;
-                text.text = "<color=#9B5A2E><b>조리대</b></color>\n<size=62%>E로 레시피 선택</size>";
+                text.text = "<color=#9B5A2E><b>조리대</b></color>\nE로 레시피 선택";
                 text.fontSize = 38;
                 text.resizeTextForBestFit = true;
                 text.resizeTextMinSize = 18;
@@ -199,7 +199,7 @@ namespace _001_Scripts._900_Tools.Editor
 
             SerializedObject stationData = new(station);
             SerializedProperty labelProperty = stationData.FindProperty("recipeLabel");
-            if (labelProperty.objectReferenceValue is TMP_Text label)
+            if (labelProperty.objectReferenceValue is Text label)
             {
                 label.gameObject.SetActive(false);
             }

@@ -92,7 +92,7 @@ namespace _001_Scripts._004_UI.Components
 
             string hint = actionHint.StartsWith("E ") ? actionHint[2..] : actionHint;
             string keyLabel = player != null ? player.InteractKeyLabel : "E";
-            promptText.text = $"<color=#9B5A2E><b>{title}</b></color>\n<size=70%><color=#6F6256>{keyLabel} {hint}</color></size>";
+            promptText.text = $"<color=#9B5A2E><b>{title}</b></color>\n<color=#6F6256>{keyLabel} {hint}</color>";
         }
     }
 }

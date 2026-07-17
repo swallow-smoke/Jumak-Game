@@ -11,11 +11,13 @@ namespace _001_Scripts._005_Data.Upgrade
             int basePrice,
             int maxPurchases = 1,
             float priceMultiplier = 1f,
-            UpgradeId? prerequisite = null)
+            UpgradeId? prerequisite = null,
+            string description = "")
         {
             Id = id;
             Category = category;
             DisplayName = displayName;
+            Description = description;
             BasePrice = Mathf.Max(0, basePrice);
             MaxPurchases = Mathf.Max(1, maxPurchases);
             PriceMultiplier = Mathf.Max(1f, priceMultiplier);
@@ -25,10 +27,12 @@ namespace _001_Scripts._005_Data.Upgrade
         public UpgradeId Id { get; }
         public UpgradeCategory Category { get; }
         public string DisplayName { get; }
+        public string Description { get; }
         public int BasePrice { get; }
         public int MaxPurchases { get; }
         public float PriceMultiplier { get; }
         public UpgradeId? Prerequisite { get; }
+        public bool HasPrerequisite => Prerequisite.HasValue;
 
         public int PriceAt(int purchasedCount)
         {

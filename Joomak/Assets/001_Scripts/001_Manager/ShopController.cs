@@ -60,7 +60,7 @@ namespace _001_Scripts._001_Manager
             }
 
             // 단계형은 이전 단계를 사야 열린다. (이동속도 2단계는 1단계 구매 후)
-            if (def.HasPrerequisite && State.GetLevel(def.Prerequisite) <= 0)
+            if (def.HasPrerequisite && State.GetLevel(def.Prerequisite.Value) <= 0)
             {
                 return PurchaseResult.LockedByPrereq;
             }

@@ -1,8 +1,8 @@
 using _001_Scripts._001_Manager;
 using _001_Scripts._001_Manager.Interface;
 using _001_Scripts._005_Data.Hall;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace _001_Scripts._004_UI._000_Panels
 {
@@ -10,9 +10,9 @@ namespace _001_Scripts._004_UI._000_Panels
     // 홀 내부를 직접 뒤지지 않고 IHallService로만 읽는다.
     public sealed class HUDPanel : PanelBase
     {
-        [SerializeField] private TMP_Text reputationText;
-        [SerializeField] private TMP_Text moneyText;
-        [SerializeField] private TMP_Text orderText;
+        [SerializeField] private Text reputationText;
+        [SerializeField] private Text moneyText;
+        [SerializeField] private Text orderText;
 
         private IHallService hall;
 

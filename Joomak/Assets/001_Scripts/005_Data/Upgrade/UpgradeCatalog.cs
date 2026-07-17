@@ -23,7 +23,7 @@ namespace _001_Scripts._005_Data.Upgrade
         {
             foreach (UpgradeDefinition definition in upgrades)
             {
-                if (definition != null && definition.Category == category)
+                if (definition.Category == category)
                 {
                     yield return definition;
                 }
@@ -43,7 +43,7 @@ namespace _001_Scripts._005_Data.Upgrade
             byId = new Dictionary<UpgradeId, UpgradeDefinition>();
             foreach (UpgradeDefinition definition in upgrades)
             {
-                if (definition != null && !byId.TryAdd(definition.Id, definition))
+                if (!byId.TryAdd(definition.Id, definition))
                 {
                     Debug.LogWarning($"[UpgradeCatalog] 중복된 업그레이드 id: {definition.Id}", this);
                 }

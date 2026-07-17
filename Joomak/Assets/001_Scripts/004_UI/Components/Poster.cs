@@ -1,7 +1,6 @@
 using System.Text;
 using _001_Scripts._005_Data._000_Item;
 using DG.Tweening;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,7 +12,7 @@ namespace _001_Scripts._004_UI.Components
     public sealed class Poster : MonoBehaviour
     {
         [SerializeField] private Image resultImage;
-        [SerializeField] private TMP_Text ingredientsText;
+        [SerializeField] private Text ingredientsText;
 
         [Header("Spawn Animation")]
         [SerializeField, Min(0f)] private float spawnDropDistance = 40f;

@@ -67,7 +67,7 @@ namespace _001_Scripts._004_UI.Components
         private void Show(string symbol, Color color)
         {
             string htmlColor = ColorUtility.ToHtmlStringRGB(color);
-            symbolText.text = $"<size=160%><color=#{htmlColor}><b>{symbol}</b></color></size>";
+            symbolText.text = $"<color=#{htmlColor}><b>{symbol}</b></color>";
             symbolText.fontSize = 58;
             symbolText.resizeTextForBestFit = true;
             symbolText.resizeTextMinSize = 44;

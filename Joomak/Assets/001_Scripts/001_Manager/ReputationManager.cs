@@ -1,4 +1,5 @@
 using System;
+using _001_Scripts._004_UI.Components;
 using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
 
@@ -33,8 +34,11 @@ namespace _001_Scripts._001_Manager
 
         public void Penalize(int amount, string reason)
         {
-            Debug.Log($"[Reputation] -{Mathf.Abs(amount)} ({reason})");
-            Add(-Mathf.Abs(amount));
+            int penalty = Mathf.Abs(amount);
+            Debug.Log($"[Reputation] -{penalty} ({reason})");
+            string detail = string.IsNullOrWhiteSpace(reason) ? "명성이 감소했습니다." : reason;
+            NotificationModal.Show($"명성 -{penalty}\n{detail}", NotificationKind.Warning, 4f);
+            Add(-penalty);
         }
 
         public void Restore(int amount) => Add(Mathf.Abs(amount));
@@ -61,6 +65,7 @@ namespace _001_Scripts._001_Manager
 
             IsGameOver = true;
             Debug.Log("[Reputation] 명성이 0이 되어 게임오버");
+            NotificationModal.Show("명성이 모두 떨어졌습니다.\n영업을 더 이상 계속할 수 없습니다.", NotificationKind.Error, 6f);
             GameOver?.Invoke();
         }
     }

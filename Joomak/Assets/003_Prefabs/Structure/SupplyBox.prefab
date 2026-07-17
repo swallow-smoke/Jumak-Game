@@ -375,6 +375,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: InteractionBubble
       objectReference: {fileID: 0}
+    - target: {fileID: 3464271158487699351, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6158001067046400836, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -57
+      objectReference: {fileID: 0}
+    - target: {fileID: 6158001067046400836, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -25.2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -8,8 +8,8 @@ using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using _001_Scripts._003_Object.Interface;
 using _001_Scripts._005_Data._000_Item;
 using _001_Scripts._005_Data.Upgrade;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace _001_Scripts._003_Object._000_Structure.Cooker
 {
@@ -33,14 +33,13 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
         [SerializeField] private InventoryModel outputInventory = new();
         [SerializeField] private ItemBase failedDishItem;
         [SerializeField, Min(0f)] private float failTimeoutSeconds = 5f;
-        [SerializeField] private TextMeshProUGUI recipeLabel;
+        [SerializeField] private Text recipeLabel;
 
         [Header("Recipe Bubble")]
         [Tooltip("플레이어가 이 반경 안에 들어오면 말풍선을 띄운다. 나타날 때 Scale 연출은 프리팹의 ScaleRevealAnimator가 담당한다.")]
         [SerializeField, Min(0f)] private float bubbleShowRadius = 2.5f;
         [SerializeField] private GameObject recipeBubbleRoot;
-        [SerializeField] private TMP_Text recipeBubbleText;
-        private UnityEngine.UI.Text recipeCanvasText;
+        [SerializeField] private Text recipeBubbleText;
         [SerializeField] private Vector3 bubbleWorldOffset = new(0f, 1.45f, 0f);
         [SerializeField, Min(0.1f)] private float bubbleWorldScale = 1.25f;
 
@@ -82,17 +81,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
                 recipeBubbleRoot.transform.position = transform.position + bubbleWorldOffset;
                 recipeBubbleRoot.transform.localScale = Vector3.one * bubbleWorldScale;
 
-                TMP_Text polishedText = recipeBubbleRoot.GetComponentInChildren<TMP_Text>(true);
-                if (polishedText != null)
-                {
-                    recipeBubbleText = polishedText;
-                }
-
-                recipeCanvasText = recipeBubbleRoot.GetComponentInChildren<UnityEngine.UI.Text>(true);
-                if (recipeCanvasText != null)
-                {
-                    recipeBubbleText = null;
-                }
+                recipeBubbleText = recipeBubbleRoot.GetComponentInChildren<Text>(true);
 
                 ConfigureBubbleSorting();
                 recipeBubbleRoot.SetActive(false);
@@ -369,10 +358,6 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
                     recipeBubbleText.text = bubbleText;
                 }
 
-                if (recipeCanvasText != null)
-                {
-                    recipeCanvasText.text = bubbleText;
-                }
             }
         }
 
@@ -384,27 +369,27 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             return state switch
             {
                 State.Selecting => recipe != null
-                    ? $"<color=#9B5A2E><size=70%>레시피 선택</size></color>\n" +
+                    ? $"<color=#9B5A2E>레시피 선택</color>\n" +
                       $"<b>{GetRecipeName(recipe)}</b>\n" +
-                      $"<size=52%><color=#6F6256>위/아래 변경  ·  {key} 확정  ·  ESC 취소</color></size>"
+                      $"<color=#6F6256>위/아래 변경  ·  {key} 확정  ·  ESC 취소</color>"
                     : "<b>레시피 없음</b>",
 
                 State.Cooking =>
-                    "<color=#C85B32><size=70%>맛있게 조리 중</size></color>\n" +
+                    "<color=#C85B32>맛있게 조리 중</color>\n" +
                     $"<b>{GetRecipeName(selectedRecipe)}</b>\n" +
-                    $"<size=60%><color=#6F6256>{Mathf.CeilToInt(remainingCookTime)}초  ·  {key} 가속</color></size>",
+                    $"<color=#6F6256>{Mathf.CeilToInt(remainingCookTime)}초  ·  {key} 가속</color>",
 
                 State.Ready => outputIsFailed
-                    ? $"<color=#A33A32><b>요리 실패</b></color>\n<size=60%>{key} 치우기</size>"
+                    ? $"<color=#A33A32><b>요리 실패</b></color>\n{key} 치우기"
                     : $"<color=#3E7D4C><b>완성!</b></color>\n{GetRecipeName(selectedRecipe)}\n" +
-                      $"<size=60%><color=#6F6256>{key} 가져가기</color></size>",
+                      $"<color=#6F6256>{key} 가져가기</color>",
 
                 _ => recipe == null
                     ? "<color=#9B5A2E><b>조리대</b></color>\n" +
-                      $"<size=62%><color=#6F6256>{key} 레시피 선택</color></size>"
+                      $"<color=#6F6256>{key} 레시피 선택</color>"
                     : $"<color=#9B5A2E><b>{GetRecipeName(recipe)}</b></color>\n" +
-                      $"<size=55%>{BuildIngredientSummary(recipe)}</size>\n" +
-                      $"<size=52%><color=#6F6256>재료를 들고 {key}</color></size>"
+                      $"{BuildIngredientSummary(recipe)}\n" +
+                      $"<color=#6F6256>재료를 들고 {key}</color>"
             };
         }
 
@@ -465,28 +450,9 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
                 shadow.sortingOrder = bubbleSortingOrder - 1;
             }
 
-            if (recipeBubbleText is TextMeshPro worldText && worldText.TryGetComponent(out MeshRenderer textRenderer))
+            if (recipeBubbleText != null)
             {
-                RectTransform textTransform = worldText.rectTransform;
-                textTransform.localPosition = new Vector3(0.6f, 0.35f, -0.2f);
-                textTransform.localScale = Vector3.one * 0.04f;
-                textTransform.sizeDelta = new Vector2(34f, 13f);
-
-                worldText.enableAutoSizing = true;
-                worldText.fontSizeMin = 12f;
-                worldText.fontSizeMax = 24f;
-                worldText.alignment = TextAlignmentOptions.Center;
-                worldText.overflowMode = TextOverflowModes.Overflow;
-                worldText.color = new Color32(61, 39, 29, 255);
-
-                textRenderer.sortingLayerID = background.sortingLayerID;
-                textRenderer.sortingOrder = bubbleSortingOrder + 1;
-                textRenderer.enabled = true;
-                worldText.ForceMeshUpdate();
-            }
-            else if (recipeBubbleText is TextMeshProUGUI canvasText)
-            {
-                Canvas canvas = canvasText.GetComponentInParent<Canvas>(true);
+                Canvas canvas = recipeBubbleText.GetComponentInParent<Canvas>(true);
                 if (canvas != null)
                 {
                     canvas.overrideSorting = true;
@@ -494,31 +460,13 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
                     canvas.sortingOrder = bubbleSortingOrder + 1;
                 }
 
-                canvasText.enableAutoSizing = true;
-                canvasText.fontSizeMin = 12f;
-                canvasText.fontSizeMax = 26f;
-                canvasText.alignment = TextAlignmentOptions.Center;
-                canvasText.overflowMode = TextOverflowModes.Overflow;
-                canvasText.color = new Color32(61, 39, 29, 255);
-                canvasText.ForceMeshUpdate();
-            }
-
-            if (recipeCanvasText != null)
-            {
-                Canvas canvas = recipeCanvasText.GetComponentInParent<Canvas>(true);
-                if (canvas != null)
-                {
-                    canvas.overrideSorting = true;
-                    canvas.sortingLayerID = background.sortingLayerID;
-                    canvas.sortingOrder = bubbleSortingOrder + 1;
-                }
-
-                recipeCanvasText.color = new Color32(61, 39, 29, 255);
-                recipeCanvasText.resizeTextForBestFit = true;
-                recipeCanvasText.resizeTextMinSize = 18;
-                recipeCanvasText.resizeTextMaxSize = 38;
-                recipeCanvasText.horizontalOverflow = HorizontalWrapMode.Wrap;
-                recipeCanvasText.verticalOverflow = VerticalWrapMode.Truncate;
+                recipeBubbleText.color = new Color32(61, 39, 29, 255);
+                recipeBubbleText.resizeTextForBestFit = true;
+                recipeBubbleText.resizeTextMinSize = 18;
+                recipeBubbleText.resizeTextMaxSize = 38;
+                recipeBubbleText.alignment = TextAnchor.MiddleCenter;
+                recipeBubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
+                recipeBubbleText.verticalOverflow = VerticalWrapMode.Truncate;
             }
         }
 
