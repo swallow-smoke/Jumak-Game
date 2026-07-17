@@ -15,8 +15,9 @@ namespace _001_Scripts._001_Manager
         [SerializeField] private Trash trashPrefab;
         [SerializeField] private List<Candle> candles = new();
 
-        [Tooltip("쓰레기가 생길 홀 바닥 범위 (월드 좌표)")]
-        [SerializeField] private Rect trashArea = new(1f, -4.4f, 8f, 8.8f);
+        [Tooltip("쓰레기가 생길 홀 바닥 범위 (월드 좌표). 홀은 x<0 (왼쪽), 주방은 x>0 (오른쪽).\n" +
+                 "이 오브젝트를 선택하면 씬 뷰에 범위가 초록 사각형으로 그려진다. 타일맵에 맞춰 조정할 것.")]
+        [SerializeField] private Rect trashArea = new(-19f, -9f, 17f, 18f);
 
         private float eventTimer;
 
@@ -74,6 +75,15 @@ namespace _001_Scripts._001_Manager
             trash.Initialize(settings.TrashHits, settings.ResolveSeconds);
             Debug.Log($"[Event] 청소: 쓰레기 발생 ({settings.TrashHits}회 연타, {settings.ResolveSeconds}초)");
             return true;
+        }
+
+        // 쓰레기 범위를 코드에 박아두면 레이아웃이 바뀔 때마다 조용히 틀어진다.
+        // (실제로 홀이 왼쪽으로 옮겨졌을 때 쓰레기가 주방에 생기고 있었다)
+        // 씬 뷰에서 직접 보고 맞출 수 있게 그려준다.
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = new Color(0.2f, 1f, 0.3f, 0.9f);
+            Gizmos.DrawWireCube(trashArea.center, new Vector3(trashArea.width, trashArea.height, 0.1f));
         }
 
         public bool TryExtinguishCandle()

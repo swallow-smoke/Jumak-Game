@@ -29,16 +29,16 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.cyan;
-            Gizmos.DrawWireSphere(SpawnPosition, 0.3f);
+            Gizmos.DrawWireSphere(SpawnPosition, 0.66f);
             Gizmos.color = Color.magenta;
-            Gizmos.DrawWireSphere(ExitPosition, 0.3f);
+            Gizmos.DrawWireSphere(ExitPosition, 0.66f);
 
             Gizmos.color = Color.yellow;
             foreach (Transform spot in waitingSpots)
             {
                 if (spot != null)
                 {
-                    Gizmos.DrawWireCube(spot.position, Vector3.one * 0.4f);
+                    Gizmos.DrawWireCube(spot.position, Vector3.one * 0.9f);
                 }
             }
         }
