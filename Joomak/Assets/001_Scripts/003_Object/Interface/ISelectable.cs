@@ -1,4 +1,4 @@
-﻿namespace _001.Scripts._003_Object._000_Structure.Interface
+namespace _001_Scripts._003_Object.Interface
 {
     public interface ISelectable
     {
