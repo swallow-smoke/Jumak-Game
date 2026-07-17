@@ -48,6 +48,8 @@ namespace _001_Scripts._001_Manager
 
         public override void Initialize()
         {
+            PopulateMenuFromRecipeDatabase();
+
             subscriptions.Add(HallMessagePort.OnDishReady(OnDishReady));
             subscriptions.Add(HallMessagePort.OnOrderStatusChanged(OnOrderStatusChanged));
 
@@ -58,6 +60,29 @@ namespace _001_Scripts._001_Manager
             }
 
             SetUnlockedTableCount(startingTableCount + PurchasedTableCount());
+
+            // 영업 시작 직후 첫 손님을 보여주고, 이후부터 설정된 간격으로 받는다.
+            // 첫 스폰까지 20초 동안 아무 일도 없으면 설정이 고장 난 것처럼 보이기 쉽다.
+            spawnTimer = spawnInterval;
+        }
+
+        private void PopulateMenuFromRecipeDatabase()
+        {
+            if (menu.Count > 0 || recipeDatabase == null)
+            {
+                return;
+            }
+
+            foreach (RecipeData recipe in recipeDatabase.Recipes)
+            {
+                ItemBase dish = recipe != null ? recipe.Result.Item : null;
+                if (dish != null && dish.Category == ItemCategory.Dish && !menu.Contains(dish))
+                {
+                    menu.Add(dish);
+                }
+            }
+
+            Debug.Log($"[Hall] 비어 있던 메뉴를 RecipeDB에서 자동 구성했습니다: {menu.Count}종", this);
         }
 
         // 테이블은 씬에 미리 다 놓여 있고, 잠긴 것은 꺼둔다.
@@ -347,8 +372,21 @@ namespace _001_Scripts._001_Manager
 
         private void TrySpawnCustomer()
         {
-            if (customerPrefabs.Count == 0 || entrance == null || menu.Count == 0)
+            if (customerPrefabs.Count == 0)
             {
+                Debug.LogWarning("[Hall] Customer Prefabs가 비어 있어 손님을 생성할 수 없습니다.", this);
+                return;
+            }
+
+            if (entrance == null)
+            {
+                Debug.LogWarning("[Hall] Customer Entrance가 연결되지 않아 손님을 생성할 수 없습니다.", this);
+                return;
+            }
+
+            if (menu.Count == 0)
+            {
+                Debug.LogWarning("[Hall] Menu가 비어 있어 손님을 생성할 수 없습니다.", this);
                 return;
             }
 
@@ -363,6 +401,7 @@ namespace _001_Scripts._001_Manager
             Customer customer = Instantiate(GetNextCustomerPrefab(), entrance.SpawnPosition, Quaternion.identity);
             customer.Initialize(this, patience, waitSpot, entrance.ExitPosition, rowdy);
             customers.Add(customer);
+            Debug.Log($"[Hall] 손님 등장: {customer.name} ({customers.Count}/{entrance.WaitingCapacity})", customer);
         }
 
         // 손님 프리팹이 여러 종류면 스폰할 때마다 순서대로 번갈아 쓴다 (매번 같은 손님만 나오지 않게).
@@ -414,6 +453,11 @@ namespace _001_Scripts._001_Manager
 
         private void OnValidate()
         {
+            if (customerPrefabs.Count == 0)
+            {
+                Debug.LogWarning($"{name}: Customer Prefabs가 비어있어 손님이 절대 스폰되지 않습니다.", this);
+            }
+
             maxTableCount = Mathf.Max(1, maxTableCount);
             startingTableCount = Mathf.Clamp(startingTableCount, 1, maxTableCount);
 

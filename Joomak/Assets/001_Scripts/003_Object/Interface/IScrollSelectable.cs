@@ -6,4 +6,13 @@ namespace _001_Scripts._003_Object.Interface
     {
         void Scroll(int direction);
     }
+
+    // 레시피처럼 플레이어 이동 키를 메뉴 조작에 잠시 빌려 쓰는 상호작용.
+    public interface ISelectionInputCapture : IScrollSelectable
+    {
+        bool IsSelectionActive { get; }
+        bool CanControlSelection(UnityEngine.GameObject interactor);
+        void ConfirmSelection(UnityEngine.GameObject interactor);
+        void CancelSelection(UnityEngine.GameObject interactor);
+    }
 }

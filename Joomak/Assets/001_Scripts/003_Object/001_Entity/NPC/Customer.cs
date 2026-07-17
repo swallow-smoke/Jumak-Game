@@ -8,6 +8,7 @@ using _001_Scripts._003_Object.Interface;
 using _001_Scripts._005_Data._000_Item;
 using _001_Scripts._005_Data.Hall;
 using _001_Scripts._005_Data.Upgrade;
+using _001_Scripts._004_UI.Components;
 using UnityEngine;
 
 namespace _001_Scripts._003_Object._001_Entity.NPC
@@ -63,6 +64,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         private float satisfaction;
         private float satisfactionDecayPerSecond;
         private int remainingHits;
+        private CustomerOrderIndicator orderIndicator;
 
         public CustomerState State { get; private set; } = CustomerState.WaitingForSeat;
         public ItemBase OrderedDish => orderedDish;
@@ -92,6 +94,12 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         protected override void Awake()
         {
             base.Awake();
+
+            orderIndicator = GetComponent<CustomerOrderIndicator>();
+            if (orderIndicator == null)
+            {
+                orderIndicator = gameObject.AddComponent<CustomerOrderIndicator>();
+            }
 
             // 인스펙터에서 안 물려줬으면 Visual 자식을 찾는다.
             // 하이라이트 외곽선은 나중에 붙으므로 이 시점엔 본체 스프라이트만 있다.
@@ -550,6 +558,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         {
             State = next;
             stateTimer = 0f;
+            orderIndicator?.SetCustomerState(next);
         }
 
         private void Despawn()

@@ -26,7 +26,7 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
 
         private static void Distribute(IEnumerable<ItemAmount> unpackedItems)
         {
-            SupplyBox[] supplyBoxes = Object.FindObjectsByType<SupplyBox>(FindObjectsSortMode.None);
+            SupplyBox[] supplyBoxes = Object.FindObjectsByType<SupplyBox>(FindObjectsInactive.Exclude);
             foreach (ItemAmount entry in unpackedItems)
             {
                 foreach (SupplyBox box in supplyBoxes)

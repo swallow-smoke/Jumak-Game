@@ -3,6 +3,7 @@ using _001_Scripts._003_Object.Interface;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using _001_Scripts._005_Data.Upgrade;
+using _001_Scripts._004_UI.Components;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -49,11 +50,27 @@ namespace _001_Scripts._002_Controller
         private ContactFilter2D interactionFilter;
         private IInteractable focusedInteractable;
         private InteractionOutline2D focusedOutline;
+        private InteractionPromptBubble focusedPrompt;
+        private ISelectionInputCapture capturedSelection;
         private RunState runState;
         private float upgradeMoveMultiplier = 1f;
         private Vector2 dashDirection;
         private float dashRemaining;
         private float dashCooldownRemaining;
+        private static int selectionCaptureCount;
+        private static int selectionEscapeConsumedFrame = -1;
+
+        public static bool IsAnySelectionInputCaptured => selectionCaptureCount > 0;
+        public static bool ShouldBlockPauseMenu =>
+            IsAnySelectionInputCaptured || selectionEscapeConsumedFrame == Time.frameCount;
+
+        public string InteractKeyLabel => interactKey switch
+        {
+            Key.Space => "SPACE",
+            Key.Enter => "ENTER",
+            Key.NumpadEnter => "NUM ENTER",
+            _ => interactKey.ToString().ToUpperInvariant()
+        };
 
         // WASD 플레이어는 왼쪽 Shift, 방향키 플레이어는 오른쪽 Shift를 사용한다.
         private Key DashKey => moveUpKey == Key.UpArrow ? Key.RightShift : Key.LeftShift;
@@ -83,10 +100,22 @@ namespace _001_Scripts._002_Controller
 
         private void Update()
         {
+            if (PauseSettingsMenu.IsPaused)
+            {
+                moveInput = Vector2.zero;
+                SetFocusedObject(null);
+                return;
+            }
+
             Keyboard keyboard = Keyboard.current;
             if (keyboard == null)
             {
                 moveInput = Vector2.zero;
+                return;
+            }
+
+            if (HandleSelectionInput(keyboard))
+            {
                 return;
             }
 
@@ -107,9 +136,11 @@ namespace _001_Scripts._002_Controller
             if (keyboard[interactKey].wasPressedThisFrame)
             {
                 TryInteract();
+                TryCaptureSelectionInput();
             }
 
-            if (focusedInteractable is IScrollSelectable scrollSelectable)
+            if (focusedInteractable is IScrollSelectable scrollSelectable &&
+                focusedInteractable is not ISelectionInputCapture)
             {
                 if (keyboard[scrollUpKey].wasPressedThisFrame)
                 {
@@ -140,6 +171,68 @@ namespace _001_Scripts._002_Controller
             }
 
             InteractionRules.TryDropHeldItem(carrier, body.position + lookDirection * 0.6f);
+        }
+
+        private bool HandleSelectionInput(Keyboard keyboard)
+        {
+            if (capturedSelection == null || !capturedSelection.IsSelectionActive)
+            {
+                ReleaseSelectionInput();
+                return false;
+            }
+
+            moveInput = Vector2.zero;
+            dashRemaining = 0f;
+
+            if (keyboard.escapeKey.wasPressedThisFrame)
+            {
+                capturedSelection.CancelSelection(gameObject);
+                selectionEscapeConsumedFrame = Time.frameCount;
+                ReleaseSelectionInput();
+                return true;
+            }
+
+            if (keyboard[scrollUpKey].wasPressedThisFrame)
+            {
+                capturedSelection.Scroll(1);
+            }
+            else if (keyboard[scrollDownKey].wasPressedThisFrame)
+            {
+                capturedSelection.Scroll(-1);
+            }
+
+            if (keyboard[interactKey].wasPressedThisFrame)
+            {
+                capturedSelection.ConfirmSelection(gameObject);
+                ReleaseSelectionInput();
+            }
+
+            return true;
+        }
+
+        private void TryCaptureSelectionInput()
+        {
+            if (focusedInteractable is ISelectionInputCapture selection &&
+                selection.IsSelectionActive &&
+                selection.CanControlSelection(gameObject))
+            {
+                capturedSelection = selection;
+                selectionCaptureCount++;
+                moveInput = Vector2.zero;
+                dashRemaining = 0f;
+            }
+        }
+
+        private void ReleaseSelectionInput()
+        {
+            if (capturedSelection == null)
+            {
+                return;
+            }
+
+            capturedSelection = null;
+            selectionCaptureCount = Mathf.Max(0, selectionCaptureCount - 1);
+            moveInput = Vector2.zero;
         }
 
         private bool TrySwingBroom()
@@ -202,6 +295,8 @@ namespace _001_Scripts._002_Controller
             }
 
             runState = null;
+            capturedSelection?.CancelSelection(gameObject);
+            ReleaseSelectionInput();
             moveInput = Vector2.zero;
             dashRemaining = 0f;
             SetFocusedObject(null);
@@ -300,13 +395,25 @@ namespace _001_Scripts._002_Controller
                 focusedOutline.SetHighlighted(false);
             }
 
+            if (focusedPrompt != null)
+            {
+                focusedPrompt.SetFocused(this, false);
+            }
+
             focusedInteractable = interactable;
             focusedOutline = null;
+            focusedPrompt = null;
 
             if (focusedInteractable is Component targetComponent)
             {
                 focusedOutline = InteractionOutline2D.GetOrAdd(targetComponent.gameObject);
                 focusedOutline.SetHighlighted(true);
+
+                focusedPrompt = targetComponent.GetComponent<InteractionPromptBubble>();
+                if (focusedPrompt != null)
+                {
+                    focusedPrompt.SetFocused(this, true);
+                }
             }
         }
 

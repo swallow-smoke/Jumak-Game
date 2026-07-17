@@ -26,8 +26,76 @@ namespace _001_Scripts._900_Tools.Editor
         private const string CustomerPrefabPath = "Assets/003_Prefabs/Hall/Customer.prefab";
         private const string PlayerPrefabPath = "Assets/003_Prefabs/Hall/Player_Hall.prefab";
         private const string ItemFolder = "Assets/002_Resources/001_Datas";
+        private const string RecipeDatabasePath = "Assets/002_Resources/001_Datas/RecipeDatabase.asset";
         private const string TableRootName = "Hall_Tables";
         private const string HallRootName = "Hall_System";
+
+        [MenuItem("Joomak/Hall/Fix NPC Spawn Settings _F7")]
+        public static void FixNpcSpawnSettings()
+        {
+            HallManager hall = Object.FindAnyObjectByType<HallManager>();
+            if (hall == null)
+            {
+                Debug.LogError("[HallScenePlacer] 활성 씬에서 HallManager를 찾지 못했습니다.");
+                return;
+            }
+
+            RecipeDB database = AssetDatabase.LoadAssetAtPath<RecipeDB>(RecipeDatabasePath);
+            if (database == null)
+            {
+                Debug.LogError($"[HallScenePlacer] RecipeDB를 찾지 못했습니다: {RecipeDatabasePath}");
+                return;
+            }
+
+            List<ItemBase> dishes = new();
+            foreach (RecipeData recipe in database.Recipes)
+            {
+                ItemBase dish = recipe != null ? recipe.Result.Item : null;
+                if (dish != null && dish.Category == ItemCategory.Dish && !dishes.Contains(dish))
+                {
+                    dishes.Add(dish);
+                }
+            }
+
+            SerializedObject data = new(hall);
+            SetObjectArray(data.FindProperty("menu"), dishes);
+            data.FindProperty("spawnInterval").floatValue = 8f;
+
+            if (data.FindProperty("entrance").objectReferenceValue == null)
+            {
+                data.FindProperty("entrance").objectReferenceValue = Object.FindAnyObjectByType<CustomerEntrance>();
+            }
+
+            SerializedProperty customerPrefabs = data.FindProperty("customerPrefabs");
+            if (customerPrefabs.arraySize == 0)
+            {
+                List<Customer> prefabs = LoadCustomerPrefabs();
+                SetObjectArray(customerPrefabs, prefabs);
+            }
+
+            data.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(hall);
+            EditorSceneManager.MarkSceneDirty(hall.gameObject.scene);
+            Selection.activeGameObject = hall.gameObject;
+            Debug.Log($"[HallScenePlacer] NPC 스폰 설정 완료: 손님 {customerPrefabs.arraySize}종, 메뉴 {dishes.Count}종, 간격 8초.");
+        }
+
+        private static List<Customer> LoadCustomerPrefabs()
+        {
+            List<Customer> customers = new();
+            string[] folders = { "Assets/003_Prefabs/Customer", "Assets/003_Prefabs/Hall" };
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", folders))
+            {
+                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+                Customer customer = prefab != null ? prefab.GetComponent<Customer>() : null;
+                if (customer != null && !customers.Contains(customer))
+                {
+                    customers.Add(customer);
+                }
+            }
+
+            return customers;
+        }
 
         // 최종 형태는 가로 2 x 세로 3 = 6개. 지금은 1행(카운터 쪽)에 2개만 놓는다.
         //
