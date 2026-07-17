@@ -122,6 +122,14 @@ namespace _001_Scripts._900_Tools.Editor
             so.FindProperty("unlitSprite").objectReferenceValue = unlitSprite;
             so.ApplyModifiedPropertiesWithoutUndo();
 
+            // 플레이어 상호작용 레이캐스트는 Interaction 레이어만 본다. Default(0)면 점화가 안 된다.
+            int layer = LayerMask.NameToLayer("Interaction");
+            if (layer >= 0)
+            {
+                root.layer = layer;
+                visual.layer = layer;
+            }
+
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, CandlePrefabPath);
             Object.DestroyImmediate(root);
             return prefab;

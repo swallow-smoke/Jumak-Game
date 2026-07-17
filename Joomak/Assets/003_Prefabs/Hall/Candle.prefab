@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7034106257420358758}
   - component: {fileID: 9209797418487818541}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -102,7 +102,7 @@ GameObject:
   - component: {fileID: 5206354488971217745}
   - component: {fileID: 6284265246571735571}
   - component: {fileID: 958884064044537922}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Candle
   m_TagString: Untagged
   m_Icon: {fileID: 0}

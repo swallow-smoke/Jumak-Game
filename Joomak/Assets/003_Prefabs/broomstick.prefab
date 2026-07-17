@@ -10,11 +10,11 @@ GameObject:
   m_Component:
   - component: {fileID: 8930981347185529347}
   - component: {fileID: 5363214816233572836}
-  - component: {fileID: 5040776638792486674}
   - component: {fileID: 8512872377378128539}
   - component: {fileID: 1239636148076017513}
   - component: {fileID: 2368486360949430182}
-  m_Layer: 0
+  - component: {fileID: 9011968115169630601}
+  m_Layer: 7
   m_Name: broomstick
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -96,43 +96,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!70 &5040776638792486674
-CapsuleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7076798596022823261}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 1.15, y: 0.24}
-  m_Direction: 1
 --- !u!50 &8512872377378128539
 Rigidbody2D:
   serializedVersion: 5
@@ -173,7 +136,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._003_Object._001_Entity.Item.WorldItem
   carriedScale: {x: 1, y: 1, z: 1}
-  item: {fileID: 0}
+  item: {fileID: 11400000, guid: 68ba422c1b59ab4428d85c5ac855755b, type: 2}
 --- !u!114 &2368486360949430182
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,6 +155,42 @@ MonoBehaviour:
   actionHint: "E \uC90D\uAE30"
   worldOffset: {x: 0, y: 1.2, z: 0}
   worldScale: 1.15
+--- !u!58 &9011968115169630601
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7076798596022823261}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Radius: 0.6
 --- !u!1001 &4016001663761336739
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -280,9 +279,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1409041688687067314, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3464271158487699351, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
       propertyPath: m_Name
       value: InteractionBubble
+      objectReference: {fileID: 0}
+    - target: {fileID: 3464271158487699351, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4188530823580460569, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 6688571782037833069, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

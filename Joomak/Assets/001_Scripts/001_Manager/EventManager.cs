@@ -18,7 +18,9 @@ namespace _001_Scripts._001_Manager
 
         [Tooltip("쓰레기가 생길 홀 바닥 범위 (월드 좌표). 홀은 x<0 (왼쪽), 주방은 x>0 (오른쪽).\n" +
                  "이 오브젝트를 선택하면 씬 뷰에 범위가 초록 사각형으로 그려진다. 타일맵에 맞춰 조정할 것.")]
-        [SerializeField] private Rect trashArea = new(-19f, -9f, 17f, 18f);
+        // 먼지는 홀 안(x -36.8 ~ -15.3의 왼쪽)에서만 생긴다. 오른쪽 주방으로 넘어가면 안 된다.
+        // Rect(x, y, width, height): 오른쪽 끝(xMax)이 경계(-15.3)를 넘지 않게 -17에서 끊는다.
+        [SerializeField] private Rect trashArea = new(-35f, -2f, 18f, 21f);
 
         [Header("재료 배달 (기획서 8번 + 5-1)")]
         [Tooltip("주방이 재료를 얻는 유일한 수단이다. 이게 안 오면 주방이 그대로 멈춘다.\n" +

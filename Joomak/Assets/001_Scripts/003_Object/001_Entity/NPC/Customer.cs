@@ -49,6 +49,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         [Header("Visual")]
         [SerializeField] private SpriteRenderer visual;
         [SerializeField] private Color dineAndDashColor = new(0.9f, 0.15f, 0.15f);
+        [SerializeField] private Color rowdyColor = new(0.55f, 0.15f, 0.7f);
 
         private Color defaultColor;
         private HallManager hall;
@@ -64,6 +65,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         private float satisfaction;
         private float satisfactionDecayPerSecond;
         private int remainingHits;
+        private bool isRowdy;
         private CustomerOrderIndicator orderIndicator;
 
         public CustomerState State { get; private set; } = CustomerState.WaitingForSeat;
@@ -73,9 +75,9 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         public string CustomerId => ObjectId.ToString();
         public float Satisfaction => satisfaction;
 
-        // 손놈은 자리에 앉지 않지만 입구 자리를 차지하고 난동을 부린다.
+        // 손놈은 식사를 마친 뒤에야 정체가 드러나므로, 대기 줄에서는 평범한 손님과 똑같이 자리를 차지한다.
         public bool OccupiesWaitingSpot =>
-            State is CustomerState.WaitingForSeat or CustomerState.Following or CustomerState.Rowdy;
+            State is CustomerState.WaitingForSeat or CustomerState.Following;
 
         // 빗자루가 필요한 건 난동 중이거나 도주 중일 때뿐. 평소엔 맨손으로 접객한다.
         public bool RequiresBroom => State is CustomerState.Rowdy or CustomerState.DineAndDash;
@@ -137,13 +139,8 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             satisfactionDecayPerSecond = patience.RandomSatisfactionDecayPerSecond;
             name = "Customer";
 
-            if (startsRowdy)
-            {
-                remainingHits = EventSettings?.RowdyHits ?? 5;
-                name = "손놈";
-                SetState(CustomerState.Rowdy);
-                return;
-            }
+            // 손놈은 스폰 때 정체를 숨긴다. 평범한 손님처럼 착석·식사하고, 식사가 끝날 때 드러난다.
+            isRowdy = startsRowdy;
 
             SetState(CustomerState.WaitingForSeat);
         }
@@ -211,9 +208,9 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     break;
 
                 case CustomerState.Rowdy:
-                    // 입구 근처에서 난동. 제한시간 안에 제압하지 못하면 도망친다.
-                    MoveTowards(waitPosition);
-                    if (stateTimer >= ResolveSeconds())
+                    // 정체가 드러난 손놈이 입구로 난동을 부리며 빠져나간다.
+                    // 제한시간 안에 빗자루로 제압하지 못하면 그대로 도망친다.
+                    if (MoveTowards(exitPosition, avoidCustomers: true) || stateTimer >= ResolveSeconds())
                     {
                         Penalize("손놈이 제압당하지 않고 도망감");
                         SetState(CustomerState.Leaving);
@@ -402,6 +399,18 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                 seat.MarkDirty();
                 seat.Release(this);
                 seat = null;
+            }
+
+            // 손놈은 식사를 마친 지금 정체를 드러내고 난동을 부린다.
+            // 난동을 부리기 전에 이미 값은 치렀으므로 계산은 정상으로 한다.
+            if (isRowdy)
+            {
+                Pay();
+                remainingHits = EventSettings?.RowdyHits ?? 5;
+                name = "손놈";
+                SetVisualColor(rowdyColor);
+                SetState(CustomerState.Rowdy);
+                return;
             }
 
             // 기획서 8번 먹튀: 일부 손님은 계산하지 않고 입구로 튄다.

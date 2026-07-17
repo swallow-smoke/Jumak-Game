@@ -16,6 +16,9 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
         [SerializeField] private Sprite litSprite;
         [SerializeField] private Sprite unlitSprite;
 
+        [Tooltip("꺼진 스프라이트에 곱할 틴트. 명도를 낮춰 켜짐/꺼짐을 눈에 띄게 한다.")]
+        [SerializeField] private Color unlitTint = new(0.35f, 0.35f, 0.4f, 1f);
+
         [Header("스프라이트가 없을 때의 폴백 색상")]
         [SerializeField] private Color litColor = new(1f, 0.85f, 0.35f);
         [SerializeField] private Color unlitColor = new(0.28f, 0.26f, 0.30f);
@@ -91,7 +94,8 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
             if (sprite != null)
             {
                 flame.sprite = sprite;
-                flame.color = Color.white;
+                // 꺼진 상태는 명도를 낮춰(어둡게) 켜짐과 확실히 구분한다.
+                flame.color = IsLit ? Color.white : unlitTint;
                 return;
             }
 
