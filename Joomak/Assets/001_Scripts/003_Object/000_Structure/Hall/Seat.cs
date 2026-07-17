@@ -42,7 +42,7 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
         private void OnDrawGizmos()
         {
             Gizmos.color = IsFree ? Color.green : Color.red;
-            Gizmos.DrawWireSphere(transform.position, 0.25f);
+            Gizmos.DrawWireSphere(transform.position, 0.55f);
         }
     }
 }

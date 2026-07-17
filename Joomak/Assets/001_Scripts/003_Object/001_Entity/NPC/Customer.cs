@@ -1,6 +1,7 @@
 using System;
 using _001_Scripts._001_Manager;
 using _001_Scripts._003_Object._000_Structure.Hall;
+using _001_Scripts._003_Object._000_Structure.Interface;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using _001_Scripts._003_Object.Interface;
@@ -16,10 +17,31 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         private const float FallbackResolveSeconds = 30f;
         private const float FallbackTelegraphSeconds = 3f;
 
+        private static readonly RaycastHit2D[] AvoidHits = new RaycastHit2D[8];
+
+        // 트리거(손님·바닥 아이템)까지 다 받아서 BaseStructure만 직접 걸러낸다.
+        // 전용 레이어를 새로 파면 ProjectSettings가 바뀌어 팀원과 충돌한다.
+        private static readonly ContactFilter2D NoFilter = new()
+        {
+            useTriggers = true,
+            useLayerMask = false,
+            useDepth = false
+        };
+
+        // 아래 거리 값들은 카메라 orthographicSize 12(월드 높이 24, 타일 1.53유닛) 기준.
+        // 맵 크기가 또 바뀌면 같은 비율로 따라가야 한다.
         [Header("Movement")]
+        [Tooltip("반드시 플레이어 이동속도보다 느려야 한다. 빠르면 먹튀 손님을 쫓아가 잡을 수 없다.\n" +
+                 "월드가 커졌지만 플레이어가 5로 남아 있어 이 값도 그대로 둔다. 플레이어를 올릴 때 같은 비율로 올릴 것.")]
         [SerializeField, Min(0f)] private float moveSpeed = 2.4f;
-        [SerializeField, Min(0.01f)] private float arriveThreshold = 0.1f;
-        [SerializeField, Min(0.1f)] private float followDistance = 1f;
+        [SerializeField, Min(0.01f)] private float arriveThreshold = 0.22f;
+        [SerializeField, Min(0.1f)] private float followDistance = 2.2f;
+
+        [Header("Obstacle Avoidance")]
+        [Tooltip("손님의 몸 반경. 이 반경으로 앞을 훑어 테이블에 닿을지 미리 본다. 손님 스프라이트 반지름에 맞출 것.")]
+        [SerializeField, Min(0.05f)] private float avoidRadius = 0.78f;
+        [Tooltip("몇 유닛 앞까지 내다볼지. 너무 길면 멀리 있는 테이블을 보고 미리 피해 돌아간다.")]
+        [SerializeField, Min(0.1f)] private float avoidLookAhead = 3.1f;
 
         [Header("Visual")]
         [SerializeField] private SpriteRenderer visual;
@@ -406,10 +428,59 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
         private bool MoveTowards(Vector3 target)
         {
-            Vector3 next = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
-            next.z = transform.position.z;
-            transform.position = next;
-            return (target - transform.position).sqrMagnitude <= arriveThreshold * arriveThreshold;
+            Vector2 current = transform.position;
+            Vector2 toTarget = (Vector2)target - current;
+            float distance = toTarget.magnitude;
+
+            if (distance > arriveThreshold)
+            {
+                Vector2 direction = SteerAroundStructures(current, toTarget / distance, distance);
+                Vector2 step = direction * (moveSpeed * Time.deltaTime);
+                if (step.sqrMagnitude > distance * distance)
+                {
+                    step = direction * distance;
+                }
+
+                Vector2 next = current + step;
+                transform.position = new Vector3(next.x, next.y, transform.position.z);
+            }
+
+            return ((Vector2)target - (Vector2)transform.position).sqrMagnitude <= arriveThreshold * arriveThreshold;
+        }
+
+        // 손님은 물리로 움직이지 않으므로(transform 직접 이동) 콜라이더가 막아주지 않는다.
+        // 그래서 진행 방향을 미리 훑어 테이블/카운터에 부딪힐 것 같으면 표면을 따라 미끄러진다.
+        private Vector2 SteerAroundStructures(Vector2 origin, Vector2 direction, float distanceToTarget)
+        {
+            // 목표 지점까지만 본다. 더 멀리 보면 좌석 뒤에 있는 테이블을 피하려다 좌석에 못 앉는다.
+            float lookAhead = Mathf.Min(avoidLookAhead, distanceToTarget);
+            int hitCount = Physics2D.CircleCast(origin, avoidRadius, direction, NoFilter, AvoidHits, lookAhead);
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                RaycastHit2D hit = AvoidHits[i];
+                if (hit.collider == null || hit.transform == transform || hit.transform.IsChildOf(transform))
+                {
+                    continue;
+                }
+
+                // 막는 건 구조물(테이블·서빙카운터·촛불)뿐. 다른 손님이나 바닥 아이템은 그냥 지나간다.
+                if (hit.collider.GetComponentInParent<BaseStructure>() == null)
+                {
+                    continue;
+                }
+
+                // 부딪힐 면을 따라 옆으로 흘려보낸다. 원래 가려던 쪽에 가까운 방향을 고른다.
+                Vector2 slide = Vector2.Perpendicular(hit.normal);
+                if (Vector2.Dot(slide, direction) < 0f)
+                {
+                    slide = -slide;
+                }
+
+                return slide.normalized;
+            }
+
+            return direction;
         }
 
         private void SetState(CustomerState next)
