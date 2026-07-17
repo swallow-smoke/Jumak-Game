@@ -10,10 +10,8 @@ namespace _001_Scripts._001_Manager
         [SerializeField, Min(1)] private int startValue = 20;
         [SerializeField, Min(1)] private int maxValue = 100;
 
-        private RunState State => RunState.Instance;
-
         public int Current { get; private set; }
-        public int MaxValue => State != null ? State.MaxReputation : maxValue;
+        public int MaxValue => UpgradeApi.MaxReputation;
         public bool IsGameOver { get; private set; }
 
         public event Action<int> Changed;
@@ -22,27 +20,14 @@ namespace _001_Scripts._001_Manager
         public override void Initialize()
         {
             IsGameOver = false;
-
-            if (State != null)
-            {
-                State.ReputationChanged += OnStateReputationChanged;
-                Current = State.Reputation;
-            }
-            else
-            {
-                Current = Mathf.Clamp(startValue, 0, maxValue);
-            }
-
-            Changed?.Invoke(Current);
+            UpgradeApi.EnsureInitialized(0, startValue, maxValue);
+            UpgradeApi.ReputationChanged += OnApiReputationChanged;
+            OnApiReputationChanged(UpgradeApi.Reputation);
         }
 
         protected override void OnDestroy()
         {
-            if (State != null)
-            {
-                State.ReputationChanged -= OnStateReputationChanged;
-            }
-
+            UpgradeApi.ReputationChanged -= OnApiReputationChanged;
             base.OnDestroy();
         }
 
@@ -61,16 +46,10 @@ namespace _001_Scripts._001_Manager
                 return;
             }
 
-            if (State != null)
-            {
-                State.AddReputation(delta);
-                return;
-            }
-
-            OnStateReputationChanged(Mathf.Clamp(Current + delta, 0, maxValue));
+            UpgradeApi.AddReputation(delta);
         }
 
-        private void OnStateReputationChanged(int value)
+        private void OnApiReputationChanged(int value)
         {
             Current = value;
             Changed?.Invoke(Current);

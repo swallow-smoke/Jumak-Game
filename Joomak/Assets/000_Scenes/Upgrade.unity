@@ -279,7 +279,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332829}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.KitchenUpgradePanel,
           Assembly-CSharp
         m_MethodName: BuyCookTime
@@ -511,7 +511,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 64
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -670,7 +670,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 64
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -853,7 +853,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332830}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.HallUpgradePanel,
           Assembly-CSharp
         m_MethodName: Open
@@ -1454,7 +1454,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332829}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.KitchenUpgradePanel,
           Assembly-CSharp
         m_MethodName: Back
@@ -2115,7 +2115,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 64
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -2252,7 +2252,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332829}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.KitchenUpgradePanel,
           Assembly-CSharp
         m_MethodName: BuyPremiumDish
@@ -2386,7 +2386,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332830}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.HallUpgradePanel,
           Assembly-CSharp
         m_MethodName: BuyIronBroom
@@ -2612,7 +2612,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 64
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -2795,7 +2795,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332831}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.CommonUpgradePanel,
           Assembly-CSharp
         m_MethodName: Open
@@ -3143,7 +3143,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 64
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -3844,7 +3844,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 42
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -4218,7 +4218,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332831}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.CommonUpgradePanel,
           Assembly-CSharp
         m_MethodName: BuyReputation
@@ -6065,7 +6065,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 82
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -6144,7 +6144,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 64
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -6360,7 +6360,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332829}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.KitchenUpgradePanel,
           Assembly-CSharp
         m_MethodName: BuyFailureDelay
@@ -6538,7 +6538,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332830}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.HallUpgradePanel,
           Assembly-CSharp
         m_MethodName: Back
@@ -6731,7 +6731,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 82
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -7143,7 +7143,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332830}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.HallUpgradePanel,
           Assembly-CSharp
         m_MethodName: BuyTable
@@ -7219,7 +7219,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 64
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -7247,11 +7247,7 @@ GameObject:
   - component: {fileID: 1245332836}
   - component: {fileID: 1245332835}
   - component: {fileID: 1245332834}
-  - component: {fileID: 1245332833}
-  - component: {fileID: 1245332832}
-  - component: {fileID: 1245332831}
-  - component: {fileID: 1245332830}
-  - component: {fileID: 1245332829}
+  - component: {fileID: 1245332838}
   m_Layer: 0
   m_Name: Upgrade Shop UI
   m_TagString: Untagged
@@ -7259,186 +7255,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1245332829
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1245332828}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93e616abde741f34487dc8a2bfcefd54, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._004_UI._000_Panels.KitchenUpgradePanel
-  categoryEntryPage: {fileID: 23714768}
-  kitchenPage: {fileID: 856279570}
-  shop: {fileID: 1245332832}
-  cookTimeButton: {fileID: 26786897}
-  cookTimeStateText: {fileID: 631299555}
-  cookTimePriceText: {fileID: 463452058}
-  failureDelayButton: {fileID: 1084173549}
-  failureDelayStateText: {fileID: 340941438}
-  failureDelayPriceText: {fileID: 756169538}
-  premiumDishButton: {fileID: 355253285}
-  premiumDishStateText: {fileID: 228858752}
-  premiumDishPriceText: {fileID: 961967241}
-  feedbackText: {fileID: 720526333}
---- !u!114 &1245332830
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1245332828}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 375dbad5408f1f24fa2e9eefccbb4472, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._004_UI._000_Panels.HallUpgradePanel
-  categoryEntryPage: {fileID: 23714768}
-  hallPage: {fileID: 2111815817}
-  shop: {fileID: 1245332832}
-  patienceButton: {fileID: 1775873697}
-  patienceStateText: {fileID: 1018494431}
-  patiencePriceText: {fileID: 582886575}
-  broomButton: {fileID: 379260811}
-  broomStateText: {fileID: 121973671}
-  broomPriceText: {fileID: 1618975970}
-  tableButton: {fileID: 1227900460}
-  tableStateText: {fileID: 1116456196}
-  tablePriceText: {fileID: 693422314}
-  feedbackText: {fileID: 763881095}
---- !u!114 &1245332831
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1245332828}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84399bf5a36cf844381cc1391e704f83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._004_UI._000_Panels.CommonUpgradePanel
-  categoryEntryPage: {fileID: 23714768}
-  commonPage: {fileID: 1225183162}
-  shop: {fileID: 1245332832}
-  dashButton: {fileID: 1475375200}
-  dashStateText: {fileID: 295797651}
-  dashPriceText: {fileID: 1960504133}
-  moveSpeedButton: {fileID: 1816144185}
-  moveSpeedStateText: {fileID: 1755936859}
-  moveSpeedPriceText: {fileID: 589301401}
-  reputationButton: {fileID: 607084486}
-  reputationStateText: {fileID: 670500937}
-  reputationPriceText: {fileID: 888547484}
-  feedbackText: {fileID: 1440040349}
---- !u!114 &1245332832
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1245332828}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8155748bb4d27d4cb00ff5527385169, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._001_Manager.ShopController
-  catalog: {fileID: 11400000, guid: 07e79f3ea2a0fc5409e2b54e406aee38, type: 2}
---- !u!114 &1245332833
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1245332828}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65148210547acb64799359c0a4aa6e28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._004_UI._000_Panels.UpgradeShopEntryView
-  moneyText: {fileID: 592409100}
-  reputationText: {fileID: 1004035596}
-  sceneTexts:
-  - {fileID: 1252029373}
-  - {fileID: 119877009}
-  - {fileID: 592409100}
-  - {fileID: 1004035596}
-  - {fileID: 60883495}
-  - {fileID: 1127068861}
-  - {fileID: 431415845}
-  - {fileID: 776682729}
-  - {fileID: 148790209}
-  - {fileID: 1056927525}
-  - {fileID: 1871235545}
-  - {fileID: 1005913615}
-  - {fileID: 1411808576}
-  - {fileID: 1659900549}
-  - {fileID: 1284568371}
-  - {fileID: 57149913}
-  - {fileID: 1182714570}
-  - {fileID: 559805982}
-  - {fileID: 564426994}
-  - {fileID: 957192369}
-  - {fileID: 478185018}
-  - {fileID: 1210482162}
-  - {fileID: 1803885371}
-  - {fileID: 295797651}
-  - {fileID: 1960504133}
-  - {fileID: 1236092043}
-  - {fileID: 608815286}
-  - {fileID: 134117997}
-  - {fileID: 1755936859}
-  - {fileID: 589301401}
-  - {fileID: 55151829}
-  - {fileID: 1573263848}
-  - {fileID: 1492209795}
-  - {fileID: 670500937}
-  - {fileID: 888547484}
-  - {fileID: 1440040349}
-  - {fileID: 484870296}
-  - {fileID: 1769654801}
-  - {fileID: 218840943}
-  - {fileID: 60616996}
-  - {fileID: 664083981}
-  - {fileID: 1952305002}
-  - {fileID: 1018494431}
-  - {fileID: 582886575}
-  - {fileID: 1061065302}
-  - {fileID: 1905741016}
-  - {fileID: 1838329057}
-  - {fileID: 121973671}
-  - {fileID: 1618975970}
-  - {fileID: 352083420}
-  - {fileID: 1605783812}
-  - {fileID: 1353365506}
-  - {fileID: 1116456196}
-  - {fileID: 693422314}
-  - {fileID: 763881095}
-  - {fileID: 1509783016}
-  - {fileID: 1401764627}
-  - {fileID: 515204918}
-  - {fileID: 1919414859}
-  - {fileID: 911821341}
-  - {fileID: 1344044162}
-  - {fileID: 631299555}
-  - {fileID: 463452058}
-  - {fileID: 422602158}
-  - {fileID: 552725825}
-  - {fileID: 470218309}
-  - {fileID: 340941438}
-  - {fileID: 756169538}
-  - {fileID: 1333023384}
-  - {fileID: 1061760236}
-  - {fileID: 892439696}
-  - {fileID: 228858752}
-  - {fileID: 961967241}
-  - {fileID: 720526333}
-  previewMoney: 0
-  previewReputation: 20
-  previewMaxReputation: 100
 --- !u!114 &1245332834
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7532,6 +7348,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1245332838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1245332828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a5df482390bcd94da07ede69259f21a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._004_UI._000_Panels.UpgradeShopApiController
 --- !u!1 &1252029372
 GameObject:
   m_ObjectHideFlags: 0
@@ -7576,7 +7404,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 48
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -7770,7 +7598,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332831}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.CommonUpgradePanel,
           Assembly-CSharp
         m_MethodName: Back
@@ -8120,7 +7948,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 64
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -8433,7 +8261,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 42
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -8729,7 +8557,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332831}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.CommonUpgradePanel,
           Assembly-CSharp
         m_MethodName: BuyDash
@@ -9512,7 +9340,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 82
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -9745,7 +9573,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 42
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -9963,7 +9791,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332830}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.HallUpgradePanel,
           Assembly-CSharp
         m_MethodName: BuyPatience
@@ -10141,7 +9969,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332829}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.KitchenUpgradePanel,
           Assembly-CSharp
         m_MethodName: Open
@@ -10468,7 +10296,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1245332831}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: _001_Scripts._004_UI._000_Panels.CommonUpgradePanel,
           Assembly-CSharp
         m_MethodName: BuyMoveSpeed
@@ -10781,7 +10609,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 64
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
