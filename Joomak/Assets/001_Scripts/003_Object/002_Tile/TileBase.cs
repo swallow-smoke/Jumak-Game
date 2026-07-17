@@ -1,11 +1,21 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Tilemaps;
 
 namespace _001_Scripts._003_Object._002_Tile
 {
-    [CreateAssetMenu(fileName = "create New Tile", menuName = "Tile/Create New Tile")]
+    public enum HallTileType
+    {
+        Floor,
+        Wall
+    }
+
+    [CreateAssetMenu(fileName = "New Hall Tile", menuName = "Tile/Hall Tile")]
     public class TileBase : Tile
     {
-        // 인스펙터에서 쓸 수 있게끔 타일 바로 설정
+        [SerializeField] private HallTileType tileType = HallTileType.Floor;
+        [SerializeField] private bool isWalkable = true;
+
+        public HallTileType TileType => tileType;
+        public bool IsWalkable => isWalkable;
     }
 }
