@@ -155,6 +155,7 @@ namespace _001_Scripts._004_UI.Components
             subscriptions.Add(HallMessagePort.OnDishReady(OnDishReady));
             subscriptions.Add(HallMessagePort.OnIngredientSupplyRequested(OnIngredientSupplyRequested));
             subscriptions.Add(HallMessagePort.OnOrderStatusChanged(OnOrderStatusChanged));
+            subscriptions.Add(KitchenMessagePort.OnBundleDelivered(OnBundleDelivered));
         }
 
         private void OnOrderRequested(BaseMessage message)
@@ -174,6 +175,11 @@ namespace _001_Scripts._004_UI.Components
         {
             string ingredient = string.IsNullOrWhiteSpace(data.IngredientId) ? "재료" : data.IngredientId;
             Important($"재료 보급 요청\n{ingredient} x{data.RequestedAmount}");
+        }
+
+        private void OnBundleDelivered(IngredientBundleDeliveredMsgData data)
+        {
+            Show("재료 상자가 주방으로 전달됐습니다.\n해체대에서 포장을 풀어주세요.", NotificationKind.Success, 4f);
         }
 
         private void OnOrderStatusChanged(OrderStatusChangedMsgData data)

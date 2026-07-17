@@ -19,6 +19,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         private const int UnsatisfiedLeavePenalty = 3;
         private const float FallbackResolveSeconds = 30f;
         private const float FallbackTelegraphSeconds = 3f;
+        private const int FallbackDishPrice = 50;
 
         private static readonly RaycastHit2D[] AvoidHits = new RaycastHit2D[8];
 
@@ -71,6 +72,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         private int remainingHits;
         private bool isRowdy;
         private CustomerOrderIndicator orderIndicator;
+        private WorldProgressBar eatingProgress;
 
         public CustomerState State { get; private set; } = CustomerState.WaitingForSeat;
         public ItemBase OrderedDish => orderedDish;
@@ -112,6 +114,16 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             }
 
             orderIndicator.ConfigureAudio(questionSfx, exclamationSfx);
+
+            eatingProgress = GetComponent<WorldProgressBar>();
+            if (eatingProgress == null)
+            {
+                eatingProgress = gameObject.AddComponent<WorldProgressBar>();
+            }
+
+            eatingProgress.Configure(new Vector3(0f, 1.45f, -0.25f), 0.012f,
+                new Color(0.96f, 0.62f, 0.18f, 1f));
+            eatingProgress.SetProgress(0f, "식사 중 0%", false);
 
             // 인스펙터에서 안 물려줬으면 Visual 자식을 찾는다.
             // 하이라이트 외곽선은 나중에 붙으므로 이 시점엔 본체 스프라이트만 있다.
@@ -163,6 +175,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             }
 
             stateTimer += Time.deltaTime;
+            RefreshEatingProgress();
 
             if (IsSatisfactionActive)
             {
@@ -373,6 +386,8 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             ApplySatisfactionReputation();
             eatDuration = patience.RandomEatSeconds;
             SetState(CustomerState.Eating);
+            GameplayFeedback.Burst(transform.position + Vector3.up * 0.6f,
+                new Color(1f, 0.68f, 0.2f), "서빙!", 12);
         }
 
         // 대접받는 순간의 만족도에 따라 명성이 오르내린다.
@@ -449,7 +464,10 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             }
 
             HasPaid = true;
-            GameManager.Instance.UpdateMoney(orderedDish.Price, $"{orderedDish.DisplayName} 판매");
+            int payment = orderedDish.Price > 0 ? orderedDish.Price : FallbackDishPrice;
+            GameManager.Instance.UpdateMoney(payment, $"{orderedDish.DisplayName} 판매");
+            GameplayFeedback.Burst(transform.position + Vector3.up * 0.6f,
+                new Color(1f, 0.82f, 0.2f), $"+{payment}전", 14);
             if (UpgradeApi.SaleReputationBonus > 0 &&
                 ReputationManager.Instance != null)
             {
@@ -577,6 +595,19 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             State = next;
             stateTimer = 0f;
             orderIndicator?.SetCustomerState(next);
+            RefreshEatingProgress();
+        }
+
+        private void RefreshEatingProgress()
+        {
+            if (eatingProgress == null)
+            {
+                return;
+            }
+
+            bool isEating = State == CustomerState.Eating;
+            float normalized = isEating && eatDuration > 0f ? Mathf.Clamp01(stateTimer / eatDuration) : 0f;
+            eatingProgress.SetProgress(normalized, $"식사 중 {Mathf.RoundToInt(normalized * 100f)}%", isEating);
         }
 
         private void Despawn()

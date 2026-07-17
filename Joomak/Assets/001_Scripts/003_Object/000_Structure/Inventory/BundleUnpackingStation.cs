@@ -4,6 +4,7 @@ using _001_Scripts._003_Object._000_Structure.Interface;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using _001_Scripts._005_Data._000_Item;
+using _001_Scripts._004_UI.Components;
 using UnityEngine;
 
 namespace _001_Scripts._003_Object._000_Structure.Inventory
@@ -38,6 +39,9 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
 
             Distribute(bundleData.GetUnpackedItems());
             AudioManager.Instance?.PlaySfx(unpackSfx);
+            string bundleName = string.IsNullOrWhiteSpace(bundleData.DisplayName) ? "재료 상자" : bundleData.DisplayName;
+            GameplayFeedback.Burst(transform.position, new Color(0.38f, 0.9f, 0.48f), "해체 완료!", 15);
+            NotificationModal.Show($"{bundleName} 해체 완료\n보급함의 재고가 채워졌습니다.", NotificationKind.Success, 3f);
         }
 
         private static void Distribute(IEnumerable<ItemAmount> unpackedItems)

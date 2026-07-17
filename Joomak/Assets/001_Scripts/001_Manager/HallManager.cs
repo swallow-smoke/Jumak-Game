@@ -44,6 +44,8 @@ namespace _001_Scripts._001_Manager
 
         // 주문서 UI(OrderPanel)가 새 주문이 들어올 때마다 이걸로 알아챈다.
         public event Action<OrderSnapshot> OrderCreated;
+        // 서빙 완료나 취소로 주문 추적이 끝나면 주문판이 해당 주문 ID의 카드를 제거한다.
+        public event Action<Guid> OrderRemoved;
 
         public override void Initialize()
         {
@@ -154,6 +156,7 @@ namespace _001_Scripts._001_Manager
             if (status == HallOrderStatus.Served)
             {
                 orders.Remove(record);
+                OrderRemoved?.Invoke(orderId);
             }
 
             return true;
@@ -168,6 +171,7 @@ namespace _001_Scripts._001_Manager
             }
 
             orders.Remove(record);
+            OrderRemoved?.Invoke(orderId);
             HallMessagePort.CancelOrder(orderId, reason, sender);
             return true;
         }

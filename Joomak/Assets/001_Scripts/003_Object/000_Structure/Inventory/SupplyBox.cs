@@ -3,6 +3,7 @@ using _001_Scripts._003_Object._000_Structure.Interface;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using _001_Scripts._005_Data._000_Item;
+using _001_Scripts._004_UI.Components;
 using UnityEngine;
 
 namespace _001_Scripts._003_Object._000_Structure.Inventory
@@ -24,6 +25,8 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
         [Tooltip("재료를 꺼낼 때 재생합니다. jar 프리팹에는 식혜를 뜨는 소리를 지정하면 됩니다.")]
         [SerializeField] private AudioClip takeSfx;
 
+        private WorldProgressBar stockProgress;
+
         public ItemBase SuppliedItem => suppliedItem;
         public int MaxStack => maxStack;
         public int StoredCount => storedCount;
@@ -35,6 +38,7 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
         {
             int accepted = Mathf.Clamp(amount, 0, maxStack - storedCount);
             storedCount += accepted;
+            RefreshStockProgress();
             return accepted;
         }
 
@@ -64,7 +68,10 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
             if (carrier.TryConsumeHeldItem(heldItem))
             {
                 storedCount++;
+                RefreshStockProgress();
                 AudioManager.Instance?.PlaySfx(storeSfx);
+                GameplayFeedback.Burst(transform.position + Vector3.up * 0.4f,
+                    new Color(0.4f, 0.86f, 0.45f), null, 6);
             }
         }
 
@@ -78,7 +85,10 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
             if (carrier.TryCarry(worldItem))
             {
                 storedCount--;
+                RefreshStockProgress();
                 AudioManager.Instance?.PlaySfx(takeSfx);
+                GameplayFeedback.Burst(transform.position + Vector3.up * 0.4f,
+                    new Color(1f, 0.72f, 0.24f), null, 6);
                 return;
             }
 
@@ -92,6 +102,16 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
             storeSfx ??= defaultInteraction;
             takeSfx ??= defaultInteraction;
             UpdateItemDisplay();
+
+            stockProgress = GetComponent<WorldProgressBar>();
+            if (stockProgress == null)
+            {
+                stockProgress = gameObject.AddComponent<WorldProgressBar>();
+            }
+
+            stockProgress.Configure(new Vector3(0f, 1.05f, -0.25f), 0.008f,
+                new Color(0.35f, 0.82f, 0.38f, 1f));
+            RefreshStockProgress();
         }
 
         private void OnValidate()
@@ -112,6 +132,17 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
             itemDisplay.sprite = suppliedItem != null && suppliedItem.WorldPrefab != null
                 ? suppliedItem.WorldPrefab.GetComponentInChildren<SpriteRenderer>()?.sprite
                 : null;
+        }
+
+        private void RefreshStockProgress()
+        {
+            if (stockProgress == null)
+            {
+                return;
+            }
+
+            float normalized = maxStack > 0 ? (float)storedCount / maxStack : 0f;
+            stockProgress.SetProgress(normalized, $"{storedCount}/{maxStack}", true);
         }
     }
 }

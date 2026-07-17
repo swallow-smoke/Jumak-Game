@@ -4,6 +4,7 @@ using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using _001_Scripts._003_Object._001_Entity.NPC;
 using _001_Scripts._005_Data._000_Item;
+using _001_Scripts._004_UI.Components;
 using UnityEngine;
 
 namespace _001_Scripts._003_Object._000_Structure.Hall
@@ -36,6 +37,7 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
                 TryGetFreeSeat(escort.Escorted.transform.position, out Seat freeSeat) &&
                 escort.Escorted.TrySit(freeSeat))
             {
+                GameplayFeedback.Burst(freeSeat.SitPosition, new Color(0.45f, 0.8f, 1f), "착석", 8);
                 return;
             }
 
@@ -93,6 +95,7 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
             if (carrier.TryCarry(plate))
             {
                 dirtySeat.ClearPlate();
+                GameplayFeedback.Burst(transform.position, new Color(0.72f, 0.86f, 1f), "정리!", 8);
                 return;
             }
 

@@ -10,6 +10,7 @@ using _001_Scripts._003_Object.Interface;
 using _001_Scripts._005_Data._000_Item;
 using _001_Scripts._005_Data.Upgrade;
 using UnityEngine;
+using _001_Scripts._004_UI.Components;
 using UnityEngine.UI;
 
 namespace _001_Scripts._003_Object._000_Structure.Cooker
@@ -136,13 +137,13 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             main.startLifetime = new ParticleSystem.MinMaxCurve(0.8f, 1.35f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(0.28f, 0.62f);
             main.startSize = new ParticleSystem.MinMaxCurve(0.12f, 0.25f);
-            main.maxParticles = 48;
+            main.maxParticles = 80;
             main.startColor = stationType == CookingStationType.Griddle
                 ? new ParticleSystem.MinMaxGradient(new Color32(255, 119, 35, 220), new Color32(255, 220, 120, 200))
                 : new ParticleSystem.MinMaxGradient(new Color32(255, 250, 235, 190), new Color32(190, 205, 210, 145));
 
             ParticleSystem.EmissionModule emission = cookingParticle.emission;
-            emission.rateOverTime = stationType == CookingStationType.Griddle ? 14f : 9f;
+            emission.rateOverTime = stationType == CookingStationType.Griddle ? 26f : 16f;
 
             ParticleSystem.ShapeModule shape = cookingParticle.shape;
             shape.shapeType = ParticleSystemShapeType.Circle;
@@ -315,11 +316,15 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             }
 
             PlayInteractionSfx();
+            GameplayFeedback.Burst(transform.position + Vector3.up * 0.35f,
+                new Color(0.55f, 0.86f, 1f), "재료 투입", 6);
 
             if (selectedRecipe.TryConsumeIngredients(ingredientInventory))
             {
                 remainingCookTime = selectedRecipe.CookTime * CookTimeMultiplier;
                 state = State.Cooking;
+                GameplayFeedback.Burst(transform.position + Vector3.up * 0.45f,
+                    new Color(1f, 0.55f, 0.16f), "조리 시작!", 11);
             }
         }
 
@@ -359,6 +364,8 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             readyElapsedSeconds = 0f;
             outputIsFailed = false;
             state = State.Ready;
+            GameplayFeedback.Burst(transform.position + Vector3.up * 0.5f,
+                new Color(1f, 0.8f, 0.24f), "요리 완성!", 16);
         }
 
         private void TurnOutputIntoFailedDish()
@@ -397,6 +404,8 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             outputIsFailed = false;
             state = State.Idle;
             PlayInteractionSfx();
+            GameplayFeedback.Burst(transform.position + Vector3.up * 0.4f,
+                new Color(0.45f, 0.9f, 0.55f), "완성품 획득", 8);
         }
 
         // 선택 중이면 지금 스크롤로 보고 있는 후보를, 아니면 확정된 레시피를 보여준다.

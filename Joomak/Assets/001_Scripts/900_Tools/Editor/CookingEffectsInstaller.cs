@@ -106,13 +106,13 @@ namespace _001_Scripts._900_Tools.Editor
             main.startLifetime = new ParticleSystem.MinMaxCurve(0.8f, 1.35f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(0.28f, 0.62f);
             main.startSize = new ParticleSystem.MinMaxCurve(0.12f, 0.25f);
-            main.maxParticles = 48;
+            main.maxParticles = 80;
             main.startColor = sparks
                 ? new ParticleSystem.MinMaxGradient(new Color32(255, 119, 35, 220), new Color32(255, 220, 120, 200))
                 : new ParticleSystem.MinMaxGradient(new Color32(255, 250, 235, 190), new Color32(190, 205, 210, 145));
 
             ParticleSystem.EmissionModule emission = particle.emission;
-            emission.rateOverTime = sparks ? 14f : 9f;
+            emission.rateOverTime = sparks ? 26f : 16f;
             ParticleSystem.ShapeModule shape = particle.shape;
             shape.shapeType = ParticleSystemShapeType.Circle;
             shape.radius = sparks ? 0.34f : 0.24f;

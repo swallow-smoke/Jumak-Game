@@ -3,6 +3,7 @@ using _001_Scripts._003_Object._000_Structure.Hall;
 using _001_Scripts._003_Object._001_Entity;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._005_Data.Hall;
+using _001_Scripts._004_UI.Components;
 using UnityEngine;
 
 namespace _001_Scripts._001_Manager
@@ -122,6 +123,15 @@ namespace _001_Scripts._001_Manager
             }
 
             Debug.Log($"[Event] 재료 배달: 상자 {delivered}개 도착 (다음 배달 {deliveryInterval}초 후)");
+            if (delivered > 0)
+            {
+                NotificationModal.Show(
+                    $"재료 배달이 도착했습니다.\n홀 입구의 상자 {delivered}개를 주방으로 옮겨주세요.",
+                    NotificationKind.Warning,
+                    5f);
+                GameplayFeedback.Burst(deliveryPoint.position, new Color(1f, 0.68f, 0.2f), "배달 도착!", 16);
+            }
+
             return delivered;
         }
 
@@ -158,6 +168,8 @@ namespace _001_Scripts._001_Manager
 
             Trash trash = Instantiate(trashPrefab, position, Quaternion.identity);
             trash.Initialize(settings.TrashHits, settings.ResolveSeconds);
+            NotificationModal.Important("홀에 쓰레기가 생겼습니다.\n빗자루로 치워주세요.", 4f);
+            GameplayFeedback.Burst(position, new Color(0.55f, 0.42f, 0.28f), "청소 필요", 8);
             Debug.Log($"[Event] 청소: 쓰레기 발생 ({settings.TrashHits}회 연타, {settings.ResolveSeconds}초)");
             return true;
         }
@@ -202,6 +214,7 @@ namespace _001_Scripts._001_Manager
 
             Candle target = lit[Random.Range(0, lit.Count)];
             target.Extinguish(settings.ResolveSeconds);
+            NotificationModal.Important("촛불 하나가 꺼졌습니다.\n시간 안에 다시 밝혀주세요.", 4f);
             Debug.Log($"[Event] 촛불 관리: {target.name}이(가) 꺼짐 ({settings.ResolveSeconds}초)");
             return true;
         }

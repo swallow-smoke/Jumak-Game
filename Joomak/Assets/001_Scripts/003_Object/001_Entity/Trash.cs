@@ -1,6 +1,7 @@
 using _001_Scripts._001_Manager;
 using _001_Scripts._003_Object.Interface;
 using UnityEngine;
+using _001_Scripts._004_UI.Components;
 
 namespace _001_Scripts._003_Object._001_Entity
 {
@@ -50,6 +51,8 @@ namespace _001_Scripts._003_Object._001_Entity
             }
 
             remainingHits--;
+            GameplayFeedback.Burst(transform.position, new Color(0.65f, 0.53f, 0.36f),
+                remainingHits > 0 ? $"남은 횟수 {remainingHits}" : null, 6);
             if (remainingHits <= 0)
             {
                 Resolve();
@@ -67,6 +70,7 @@ namespace _001_Scripts._003_Object._001_Entity
         private void Resolve()
         {
             isResolved = true;
+            GameplayFeedback.Burst(transform.position, new Color(0.45f, 0.9f, 0.55f), "청소 완료!", 14);
             Destroy(gameObject);
         }
     }

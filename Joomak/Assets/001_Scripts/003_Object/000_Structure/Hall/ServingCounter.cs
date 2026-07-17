@@ -5,6 +5,8 @@ using _001_Scripts._003_Object._000_Structure.Inventory;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using _001_Scripts._005_Data._000_Item;
+using _001_Scripts._000_Core;
+using _001_Scripts._004_UI.Components;
 using UnityEngine;
 
 namespace _001_Scripts._003_Object._000_Structure.Hall
@@ -95,6 +97,9 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
 
             StackOnCounter(bundle, bundles.Count);
             bundles.Add(bundle);
+            string bundleId = bundle.BundleData != null ? bundle.BundleData.BundleId : bundle.name;
+            HallMessagePort.NotifyBundleDelivered(bundleId, structureId, gameObject);
+            GameplayFeedback.Burst(SlotRoot.position, new Color(0.4f, 0.82f, 1f), "주방 전달!", 12);
             Debug.Log($"[ServingCounter] 재료 상자 하역 ({bundles.Count}/{bundleCapacity})");
         }
 
@@ -108,7 +113,10 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
             // 빈 그릇 반납은 재고로 쌓지 않고 그대로 소멸시킨다.
             if (heldItem.Item.Category == ItemCategory.Plate)
             {
-                carrier.TryConsumeHeldItem(heldItem);
+                if (carrier.TryConsumeHeldItem(heldItem))
+                {
+                    GameplayFeedback.Burst(transform.position, new Color(0.72f, 0.84f, 1f), "그릇 반납", 7);
+                }
                 return;
             }
 
@@ -116,6 +124,7 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
             {
                 carrier.TryConsumeHeldItem(heldItem);
                 UpdateFirstItemDisplay();
+                GameplayFeedback.Burst(transform.position, new Color(1f, 0.7f, 0.22f), "요리 준비!", 9);
             }
         }
 
@@ -150,7 +159,10 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
                 // 못 가져가면 원래 자리에 도로 얹어둔다. 안 그러면 상자가 바닥에 떨어진 채 남는다.
                 StackOnCounter(bundle, bundles.Count);
                 bundles.Add(bundle);
+                return;
             }
+
+            GameplayFeedback.Burst(SlotRoot.position, new Color(0.48f, 0.9f, 0.55f), "상자 수령", 8);
         }
 
         // 카운터가 대신 들고 있는 상태로 만들어 물리를 끄고, 쌓인 순서대로 위로 얹는다.
@@ -187,6 +199,8 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
             {
                 HallManager.Instance.TryCollectDish(pickedItem.ItemId, interactor);
             }
+
+            GameplayFeedback.Burst(transform.position, new Color(1f, 0.68f, 0.2f), "서빙 준비!", 9);
         }
 
         // 손님/홀 플레이어는 여기 맨 앞(가장 먼저 들어온) 요리부터 가져간다. 그 요리를 카운터 위에 띄워 보여준다.

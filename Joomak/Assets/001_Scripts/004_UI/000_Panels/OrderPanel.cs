@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using _001_Scripts._001_Manager;
 using _001_Scripts._004_UI.Components;
@@ -24,6 +25,7 @@ namespace _001_Scripts._004_UI._000_Panels
         [SerializeField] private Vector2 startAnchoredPosition = Vector2.zero;
 
         private readonly List<Poster> activePosters = new();
+        private readonly Dictionary<Guid, Poster> postersByOrderId = new();
 
         protected override void Start()
         {
@@ -32,6 +34,7 @@ namespace _001_Scripts._004_UI._000_Panels
             if (HallManager.Instance != null)
             {
                 HallManager.Instance.OrderCreated += OnOrderCreated;
+                HallManager.Instance.OrderRemoved += OnOrderRemoved;
             }
         }
 
@@ -40,6 +43,7 @@ namespace _001_Scripts._004_UI._000_Panels
             if (HallManager.Instance != null)
             {
                 HallManager.Instance.OrderCreated -= OnOrderCreated;
+                HallManager.Instance.OrderRemoved -= OnOrderRemoved;
             }
 
             base.OnDestroy();
@@ -59,6 +63,7 @@ namespace _001_Scripts._004_UI._000_Panels
             poster.gameObject.SetActive(false);
             ((RectTransform)poster.transform).anchoredPosition = GetGridPosition(activePosters.Count);
             activePosters.Add(poster);
+            postersByOrderId[order.OrderId] = poster;
             poster.gameObject.SetActive(true);
 
             RecipeData recipe = null;
@@ -66,8 +71,17 @@ namespace _001_Scripts._004_UI._000_Panels
             poster.Show(recipe);
         }
 
-        // 주문 완료/취소 시 카드를 치우고 나머지를 앞으로 당겨 빈 칸을 안 남기려면 이걸 부르면 된다.
-        // 지금은 "주문 완료" 이벤트가 따로 없어서 아직 아무도 호출하지 않는다.
+        private void OnOrderRemoved(Guid orderId)
+        {
+            if (!postersByOrderId.Remove(orderId, out Poster poster))
+            {
+                return;
+            }
+
+            RemovePoster(poster);
+        }
+
+        // 주문 완료/취소 시 카드를 치우고 나머지를 앞으로 당겨 빈 칸을 남기지 않는다.
         public void RemovePoster(Poster poster)
         {
             int index = activePosters.IndexOf(poster);
@@ -77,11 +91,30 @@ namespace _001_Scripts._004_UI._000_Panels
             }
 
             activePosters.RemoveAt(index);
+            RemovePosterLookup(poster);
             Destroy(poster.gameObject);
 
             for (int i = index; i < activePosters.Count; i++)
             {
                 ((RectTransform)activePosters[i].transform).anchoredPosition = GetGridPosition(i);
+            }
+        }
+
+        private void RemovePosterLookup(Poster poster)
+        {
+            Guid matchingId = Guid.Empty;
+            foreach (KeyValuePair<Guid, Poster> pair in postersByOrderId)
+            {
+                if (pair.Value == poster)
+                {
+                    matchingId = pair.Key;
+                    break;
+                }
+            }
+
+            if (matchingId != Guid.Empty)
+            {
+                postersByOrderId.Remove(matchingId);
             }
         }
 

@@ -16,7 +16,7 @@ MonoBehaviour:
   stationType: 0
   ingredients:
   - item: {fileID: 11400000, guid: 0bca63dd02c67314e86fedd78400610b, type: 2}
-    amount: 0
+    amount: 1
   result:
     item: {fileID: 11400000, guid: 7841bcf31fa818948a6522a5f143a8e6, type: 2}
     amount: 1

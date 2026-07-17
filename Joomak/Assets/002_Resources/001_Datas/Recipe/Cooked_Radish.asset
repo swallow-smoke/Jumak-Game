@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe4df7cca5bcb8347b48f8b343eca7c4, type: 3}
   m_Name: Cooked_Radish
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._005_Data._000_Item.RecipeData
-  recipeId: 
+  recipeId: cooked_radish
   stationType: 0
   ingredients:
   - item: {fileID: 11400000, guid: b6abc1c2e412e724291270b1ccbc7077, type: 2}

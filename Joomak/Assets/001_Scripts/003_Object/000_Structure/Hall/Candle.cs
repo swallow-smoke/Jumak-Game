@@ -1,6 +1,7 @@
 using _001_Scripts._001_Manager;
 using _001_Scripts._003_Object._000_Structure.Interface;
 using UnityEngine;
+using _001_Scripts._004_UI.Components;
 
 namespace _001_Scripts._003_Object._000_Structure.Hall
 {
@@ -59,7 +60,7 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
         {
             if (!IsLit)
             {
-                Relight();
+                Relight(true);
             }
         }
 
@@ -73,13 +74,18 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
             IsLit = false;
             remainingSeconds = timeLimitSeconds;
             ApplyVisual();
+            GameplayFeedback.Burst(transform.position, new Color(0.4f, 0.45f, 0.55f), "꺼짐!", 7);
         }
 
-        private void Relight()
+        private void Relight(bool playerAction = false)
         {
             IsLit = true;
             remainingSeconds = 0f;
             ApplyVisual();
+            if (playerAction)
+            {
+                GameplayFeedback.Burst(transform.position, new Color(1f, 0.72f, 0.2f), "점화!", 13);
+            }
         }
 
         private void ApplyVisual()
