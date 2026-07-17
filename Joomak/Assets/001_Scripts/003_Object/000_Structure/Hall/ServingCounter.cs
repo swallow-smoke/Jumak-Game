@@ -41,6 +41,12 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
 
         private Transform SlotRoot => bundleSlot != null ? bundleSlot : transform;
 
+        protected override void Awake()
+        {
+            base.Awake();
+            UpdateFirstItemDisplay();
+        }
+
         public override void Interact(GameObject interactor)
         {
             if (!interactor.TryGetComponent(out ISingleItemCarrier carrier))
@@ -107,6 +113,7 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
             if (dishInventory.TryAdd(heldItem.Item, 1))
             {
                 carrier.TryConsumeHeldItem(heldItem);
+                UpdateFirstItemDisplay();
             }
         }
 
@@ -177,6 +184,20 @@ namespace _001_Scripts._003_Object._000_Structure.Hall
             {
                 HallManager.Instance.TryCollectDish(pickedItem.ItemId, interactor);
             }
+        }
+
+        // 손님/홀 플레이어는 여기 맨 앞(가장 먼저 들어온) 요리부터 가져간다. 그 요리를 카운터 위에 띄워 보여준다.
+        private void UpdateFirstItemDisplay()
+        {
+            if (firstItemDisplay == null)
+            {
+                return;
+            }
+
+            ItemBase first = inventory.Stacks.Count > 0 ? inventory.Stacks[0].Item : null;
+            firstItemDisplay.sprite = first != null && first.WorldPrefab != null
+                ? first.WorldPrefab.GetComponentInChildren<SpriteRenderer>()?.sprite
+                : null;
         }
     }
 }

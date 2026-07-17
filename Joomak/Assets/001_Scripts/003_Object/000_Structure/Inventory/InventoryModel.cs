@@ -11,6 +11,15 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
         [SerializeField, Min(1)] private int slotCapacity = 8;
         [SerializeField] private List<ItemStack> stacks = new();
 
+        public InventoryModel()
+        {
+        }
+
+        public InventoryModel(int slotCapacity)
+        {
+            this.slotCapacity = Mathf.Max(1, slotCapacity);
+        }
+
         public IReadOnlyList<ItemStack> Stacks => stacks;
 
         public int CountOf(ItemBase item)
