@@ -3,11 +3,8 @@ using UnityEngine;
 
 namespace _001_Scripts._001_Manager
 {
-    public class ItemManager : MonoBehaviour, IManager
+    public class ItemManager : MonoBehaviour
     {
-        public void Initialize()
-        {
-            Debug.Log($"{nameof(ItemManager)} initialized}}");
-        }
+        
     }
 }
