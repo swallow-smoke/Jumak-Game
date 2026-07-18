@@ -110,8 +110,8 @@ namespace _001_Scripts._004_UI.Components
             listRoot.anchorMin = new Vector2(0f, 1f);
             listRoot.anchorMax = new Vector2(0f, 1f);
             listRoot.pivot = new Vector2(0f, 1f);
-            listRoot.anchoredPosition = new Vector2(28f, -28f);
-            listRoot.sizeDelta = new Vector2(430f, 0f);
+            listRoot.anchoredPosition = new Vector2(32f, -32f);
+            listRoot.sizeDelta = new Vector2(500f, 0f);
 
             VerticalLayoutGroup layout = listObject.AddComponent<VerticalLayoutGroup>();
             layout.spacing = 10f;
@@ -209,8 +209,8 @@ namespace _001_Scripts._004_UI.Components
             item.transform.SetParent(listRoot, false);
 
             LayoutElement layoutElement = item.GetComponent<LayoutElement>();
-            layoutElement.preferredWidth = 430f;
-            layoutElement.preferredHeight = 88f;
+            layoutElement.preferredWidth = 500f;
+            layoutElement.preferredHeight = 104f;
 
             CanvasGroup canvasGroup = item.GetComponent<CanvasGroup>();
             canvasGroup.alpha = 0f;
@@ -231,32 +231,32 @@ namespace _001_Scripts._004_UI.Components
             accentRect.sizeDelta = new Vector2(7f, 0f);
             accentRect.anchoredPosition = Vector2.zero;
 
-            Text icon = CreateText("Icon", visual.transform, GetIcon(kind), 32, FontStyle.Bold);
+            Text icon = CreateText("Icon", visual.transform, GetIcon(kind), 36, FontStyle.Bold);
             RectTransform iconRect = icon.rectTransform;
             iconRect.anchorMin = new Vector2(0f, 0f);
             iconRect.anchorMax = new Vector2(0f, 1f);
             iconRect.pivot = new Vector2(0f, 0.5f);
-            iconRect.anchoredPosition = new Vector2(22f, 0f);
-            iconRect.sizeDelta = new Vector2(42f, 0f);
+            iconRect.anchoredPosition = new Vector2(25f, 0f);
+            iconRect.sizeDelta = new Vector2(48f, 0f);
             icon.alignment = TextAnchor.MiddleCenter;
             icon.color = accentColor;
 
-            Text title = CreateText("Title", visual.transform, GetTitle(kind), 19, FontStyle.Bold);
+            Text title = CreateText("Title", visual.transform, GetTitle(kind), 22, FontStyle.Bold);
             RectTransform titleRect = title.rectTransform;
             titleRect.anchorMin = new Vector2(0f, 1f);
             titleRect.anchorMax = new Vector2(1f, 1f);
             titleRect.pivot = new Vector2(0f, 1f);
-            titleRect.offsetMin = new Vector2(72f, -37f);
-            titleRect.offsetMax = new Vector2(-18f, -9f);
+            titleRect.offsetMin = new Vector2(82f, -43f);
+            titleRect.offsetMax = new Vector2(-22f, -10f);
             title.alignment = TextAnchor.MiddleLeft;
             title.color = accentColor;
 
-            Text body = CreateText("Message", visual.transform, message, 16, FontStyle.Normal);
+            Text body = CreateText("Message", visual.transform, message, 18, FontStyle.Normal);
             RectTransform bodyRect = body.rectTransform;
             bodyRect.anchorMin = Vector2.zero;
             bodyRect.anchorMax = Vector2.one;
-            bodyRect.offsetMin = new Vector2(72f, 10f);
-            bodyRect.offsetMax = new Vector2(-18f, -37f);
+            bodyRect.offsetMin = new Vector2(82f, 12f);
+            bodyRect.offsetMax = new Vector2(-22f, -43f);
             body.alignment = TextAnchor.UpperLeft;
             body.color = new Color(1f, 0.96f, 0.87f, 1f);
             body.horizontalOverflow = HorizontalWrapMode.Wrap;

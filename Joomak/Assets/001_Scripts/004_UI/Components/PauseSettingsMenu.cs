@@ -43,6 +43,7 @@ namespace _001_Scripts._004_UI.Components
         private readonly List<Resolution> resolutions = new();
         private float previousTimeScale = 1f;
         private bool isOpen;
+        private KeyBindingSettingsPanel keyBindingPanel;
 
         public static bool IsPaused { get; private set; }
 
@@ -61,6 +62,14 @@ namespace _001_Scripts._004_UI.Components
             restartButton?.onClick.AddListener(RestartScene);
             quitButton?.onClick.AddListener(QuitGame);
 
+            keyBindingPanel = GetComponent<KeyBindingSettingsPanel>();
+            if (keyBindingPanel == null)
+            {
+                keyBindingPanel = gameObject.AddComponent<KeyBindingSettingsPanel>();
+            }
+
+            keyBindingPanel.Initialize(settingsPanel);
+
             LoadSettings();
             BuildResolutionOptions();
             SetVisible(false);
@@ -68,6 +77,11 @@ namespace _001_Scripts._004_UI.Components
 
         private void Update()
         {
+            if (keyBindingPanel != null && keyBindingPanel.HandleKeyboardInput())
+            {
+                return;
+            }
+
             if (Keyboard.current?.escapeKey.wasPressedThisFrame == true)
             {
                 if (PlayerController.ShouldBlockPauseMenu)
@@ -134,6 +148,11 @@ namespace _001_Scripts._004_UI.Components
 
         private void SetVisible(bool visible)
         {
+            if (!visible)
+            {
+                keyBindingPanel?.CloseImmediate();
+            }
+
             dimmedBackground?.SetActive(visible);
             settingsPanel?.SetActive(visible);
         }

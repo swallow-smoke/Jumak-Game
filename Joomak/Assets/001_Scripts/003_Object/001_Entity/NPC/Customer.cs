@@ -40,6 +40,18 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         [SerializeField, Min(0f)] private float moveSpeed = 2.4f;
         [SerializeField, Min(0.01f)] private float arriveThreshold = 0.22f;
         [SerializeField, Min(0.1f)] private float followDistance = 2.2f;
+        [Tooltip("플레이어보다 가볍게 설정해 플레이어와 충돌하면 밀려납니다.")]
+        [SerializeField, Min(0.1f)] private float npcMass = 1f;
+        [SerializeField, Min(0f)] private float movementDamping = 3f;
+
+        [Header("Seated Position Recovery")]
+        [Tooltip("착석한 손님이 밀려났을 때 좌석으로 돌아오는 최대 속도입니다.")]
+        [SerializeField, Min(0.1f)] private float seatReturnSpeed = 4.5f;
+        [Tooltip("좌석과의 거리 차이를 복귀 속도로 바꾸는 반응도입니다.")]
+        [SerializeField, Min(0.1f)] private float seatReturnResponsiveness = 8f;
+        [SerializeField, Min(0.001f)] private float seatSnapDistance = 0.04f;
+        [Tooltip("물리 충돌로 테이블 앞에 막혀도 이 거리까지 오면 착석 완료로 처리합니다.")]
+        [SerializeField, Min(0.1f)] private float seatArrivalDistance = 0.85f;
 
         [Header("Obstacle Avoidance")]
         [Tooltip("손님의 몸 반경. 이 반경으로 앞을 훑어 테이블에 닿을지 미리 본다. 손님 스프라이트 반지름에 맞출 것.")]
@@ -57,6 +69,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         [SerializeField] private AudioClip exclamationSfx;
 
         private Color defaultColor;
+        private Rigidbody2D body;
         private HallManager hall;
         private CustomerPatienceSettings patience;
         private CustomerEscort escort;
@@ -96,12 +109,31 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             State is CustomerState.WaitingForSeat or CustomerState.Following or CustomerState.WalkingToSeat
                 or CustomerState.Deciding or CustomerState.ReadyToOrder or CustomerState.WaitingForFood;
 
+        private bool IsSeated =>
+            seat != null && State is (CustomerState.Deciding or CustomerState.ReadyToOrder
+                or CustomerState.WaitingForFood or CustomerState.Eating);
+
         private static HallEventSettings EventSettings =>
             EventManager.Instance != null ? EventManager.Instance.Settings : null;
 
         protected override void Awake()
         {
             base.Awake();
+
+            body = GetComponent<Rigidbody2D>();
+            if (body == null)
+            {
+                body = gameObject.AddComponent<Rigidbody2D>();
+            }
+
+            body.bodyType = RigidbodyType2D.Dynamic;
+            body.gravityScale = 0f;
+            body.mass = npcMass;
+            body.linearDamping = movementDamping;
+            body.freezeRotation = true;
+            body.interpolation = RigidbodyInterpolation2D.Interpolate;
+            body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            IgnoreOtherCustomerCollisions();
 
             AudioClip defaultInteraction = Resources.Load<AudioClip>("006_Audio/interactionSound");
             questionSfx ??= defaultInteraction;
@@ -198,7 +230,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     break;
 
                 case CustomerState.WalkingToSeat:
-                    if (MoveTowards(seat.SitPosition))
+                    if (MoveTowardsSeat())
                     {
                         decideDurationSeconds = patience.RandomDecideSeconds;
                         SetState(CustomerState.Deciding);
@@ -233,7 +265,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                 case CustomerState.Rowdy:
                     // 정체가 드러난 손놈이 입구로 난동을 부리며 빠져나간다.
                     // 제한시간 안에 빗자루로 제압하지 못하면 그대로 도망친다.
-                    if (MoveTowards(exitPosition, avoidCustomers: true) || stateTimer >= ResolveSeconds())
+                    if (MoveTowards(exitPosition) || stateTimer >= ResolveSeconds())
                     {
                         Penalize("손놈이 제압당하지 않고 도망감");
                         SetState(CustomerState.Leaving);
@@ -249,7 +281,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     }
 
                     // 계산 없이 입구로 직행. 나가기 전에 잡아야 한다.
-                    if (MoveTowards(exitPosition, avoidCustomers: true))
+                    if (MoveTowards(exitPosition))
                     {
                         Penalize("먹튀 손님을 놓침");
                         Despawn();
@@ -258,13 +290,33 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     break;
 
                 case CustomerState.Leaving:
-                    if (MoveTowards(exitPosition, avoidCustomers: true))
+                    if (MoveTowards(exitPosition))
                     {
                         Despawn();
                     }
 
                     break;
             }
+        }
+
+        private void FixedUpdate()
+        {
+            if (!IsSeated || body == null)
+            {
+                return;
+            }
+
+            Vector2 seatPosition = seat.SitPosition;
+            Vector2 offset = seatPosition - body.position;
+            if (offset.sqrMagnitude <= seatSnapDistance * seatSnapDistance)
+            {
+                body.linearVelocity = Vector2.zero;
+                body.MovePosition(seatPosition);
+                return;
+            }
+
+            // 플레이어에게 밀리는 반응은 남기되, 자리를 점유하는 동안에는 좌석을 기준점으로 되돌아간다.
+            body.linearVelocity = Vector2.ClampMagnitude(offset * seatReturnResponsiveness, seatReturnSpeed);
         }
 
         private static float ResolveSeconds() => EventSettings?.ResolveSeconds ?? FallbackResolveSeconds;
@@ -299,6 +351,8 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         private void HitWithBroom()
         {
             remainingHits--;
+            GameplayFeedback.Burst(transform.position + Vector3.up * 0.7f,
+                new Color(1f, 0.35f, 0.16f), remainingHits > 0 ? $"남은 타격 {remainingHits}" : "제압!", 10);
             if (remainingHits > 0)
             {
                 return;
@@ -530,32 +584,99 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             MoveTowards(target + toSelf.normalized * followDistance);
         }
 
-        private bool MoveTowards(Vector3 target, bool avoidCustomers = false)
+        private void IgnoreOtherCustomerCollisions()
         {
-            Vector2 current = transform.position;
+            Collider2D[] ownColliders = GetComponentsInChildren<Collider2D>(true);
+            Customer[] existingCustomers = FindObjectsByType<Customer>(FindObjectsInactive.Exclude);
+            foreach (Customer other in existingCustomers)
+            {
+                if (other == null || other == this)
+                {
+                    continue;
+                }
+
+                Collider2D[] otherColliders = other.GetComponentsInChildren<Collider2D>(true);
+                foreach (Collider2D ownCollider in ownColliders)
+                {
+                    foreach (Collider2D otherCollider in otherColliders)
+                    {
+                        if (ownCollider != null && otherCollider != null)
+                        {
+                            Physics2D.IgnoreCollision(ownCollider, otherCollider, true);
+                        }
+                    }
+                }
+            }
+        }
+
+        private bool MoveTowardsSeat()
+        {
+            if (seat == null)
+            {
+                return false;
+            }
+
+            Vector2 seatPosition = seat.SitPosition;
+            Vector2 current = body != null ? body.position : (Vector2)transform.position;
+            if ((seatPosition - current).sqrMagnitude > seatArrivalDistance * seatArrivalDistance)
+            {
+                return MoveTowards(seat.SitPosition);
+            }
+
+            // 동적 Rigidbody는 테이블 충돌체에 먼저 닿을 수 있으므로 근처까지 오면 좌석 중심으로 확정한다.
+            if (body != null)
+            {
+                body.linearVelocity = Vector2.zero;
+                body.position = seatPosition;
+            }
+            else
+            {
+                transform.position = new Vector3(seatPosition.x, seatPosition.y, transform.position.z);
+            }
+
+            return true;
+        }
+
+        private bool MoveTowards(Vector3 target)
+        {
+            Vector2 current = body != null ? body.position : (Vector2)transform.position;
             Vector2 toTarget = (Vector2)target - current;
             float distance = toTarget.magnitude;
 
             if (distance > arriveThreshold)
             {
-                Vector2 direction = SteerAroundStructures(current, toTarget / distance, distance, avoidCustomers);
-                Vector2 step = direction * (moveSpeed * Time.deltaTime);
-                if (step.sqrMagnitude > distance * distance)
+                Vector2 direction = SteerAroundStructures(current, toTarget / distance, distance);
+                if (body != null)
                 {
-                    step = direction * distance;
+                    // 속도로 이동해야 플레이어와의 질량 차이와 충돌 반응이 실제 물리 계산에 반영된다.
+                    body.linearVelocity = direction * moveSpeed;
+                }
+                else
+                {
+                    Vector2 step = direction * (moveSpeed * Time.deltaTime);
+                    if (step.sqrMagnitude > distance * distance)
+                    {
+                        step = direction * distance;
+                    }
+
+                    Vector2 next = current + step;
+                    transform.position = new Vector3(next.x, next.y, transform.position.z);
                 }
 
-                Vector2 next = current + step;
-                transform.position = new Vector3(next.x, next.y, transform.position.z);
+                return false;
             }
 
-            return ((Vector2)target - (Vector2)transform.position).sqrMagnitude <= arriveThreshold * arriveThreshold;
+            if (body != null)
+            {
+                body.linearVelocity = Vector2.zero;
+            }
+
+            return true;
         }
 
-        // 손님은 물리로 움직이지 않으므로(transform 직접 이동) 콜라이더가 막아주지 않는다.
-        // 그래서 진행 방향을 미리 훑어 테이블/카운터에 부딪힐 것 같으면 표면을 따라 미끄러진다.
-        // avoidCustomers가 true면(퇴장/먹튀 도주 중) 다른 손님도 장애물로 취급해 서로 부딪히지 않는다.
-        private Vector2 SteerAroundStructures(Vector2 origin, Vector2 direction, float distanceToTarget, bool avoidCustomers)
+        // 진행 방향을 미리 훑어 테이블/카운터에 부딪힐 것 같으면 표면을 따라 미끄러진다.
+        // 손님끼리는 충돌을 무시하므로 구조물만 회피한다. 좁은 퇴장로에서 상호 회피 교착이 생기지 않는다.
+        private Vector2 SteerAroundStructures(Vector2 origin, Vector2 direction, float distanceToTarget)
         {
             // 목표 지점까지만 본다. 더 멀리 보면 좌석 뒤에 있는 테이블을 피하려다 좌석에 못 앉는다.
             float lookAhead = Mathf.Min(avoidLookAhead, distanceToTarget);
@@ -569,8 +690,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     continue;
                 }
 
-                bool blocksMovement = hit.collider.GetComponentInParent<BaseStructure>() != null ||
-                                      (avoidCustomers && hit.collider.GetComponentInParent<Customer>() != null);
+                bool blocksMovement = hit.collider.GetComponentInParent<BaseStructure>() != null;
 
                 if (!blocksMovement)
                 {

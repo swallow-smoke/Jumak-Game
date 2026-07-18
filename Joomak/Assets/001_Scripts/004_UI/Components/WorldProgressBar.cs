@@ -94,7 +94,7 @@ namespace _001_Scripts._004_UI.Components
             canvas.sortingOrder = 1150;
 
             RectTransform rootRect = uiRoot.GetComponent<RectTransform>();
-            rootRect.sizeDelta = new Vector2(180f, 34f);
+            rootRect.sizeDelta = new Vector2(210f, 40f);
             uiRoot.transform.localScale = Vector3.one * 0.007f;
 
             RectTransform background = CreateImage(uiRoot.transform, "Background", BackgroundColor);
@@ -113,7 +113,7 @@ namespace _001_Scripts._004_UI.Components
 
             label = labelObject.GetComponent<Text>();
             label.font = CreateKoreanFont();
-            label.fontSize = 28;
+            label.fontSize = 30;
             label.fontStyle = FontStyle.Bold;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = Color.white;

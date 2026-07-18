@@ -26,8 +26,10 @@ namespace _001_Scripts._001_Manager
         [Header("재료 배달 (기획서 8번 + 5-1)")]
         [Tooltip("주방이 재료를 얻는 유일한 수단이다. 이게 안 오면 주방이 그대로 멈춘다.\n" +
                  "다른 이벤트와 달리 미해결 페널티가 없고, 늦게 받으면 그만큼 조리가 밀릴 뿐이다.")]
-        [SerializeField, Min(10f)] private float deliveryInterval = 300f;
+        [SerializeField, Min(10f)] private float deliveryInterval = 60f;
         [SerializeField, Min(1)] private int boxesPerDelivery = 3;
+        [SerializeField, Min(1)] private int minStockPerBox = 2;
+        [SerializeField, Min(1)] private int maxStockPerBox = 3;
 
         [Tooltip("상자가 도착할 홀 안의 지점. 비어 있으면 배달이 아예 안 온다.")]
         [SerializeField] private Transform deliveryPoint;
@@ -73,7 +75,7 @@ namespace _001_Scripts._001_Manager
             TriggerRandomEvent();
         }
 
-        // 재료 배달은 랜덤 이벤트 추첨과 별개다. 기획서상 5분 고정 간격이다.
+        // 재료 배달은 랜덤 이벤트 추첨과 별개로 1분 고정 간격이다.
         private void TickDelivery()
         {
             deliveryTimer += Time.deltaTime;
@@ -86,7 +88,7 @@ namespace _001_Scripts._001_Manager
             TryDeliverIngredients();
         }
 
-        // 기획서 8번: 5분 간격으로 재료 상자 3개 배송. 홀이 집어서 주방에 전달한다.
+        // 서로 다른 재료 3종을 1분 간격으로 배송한다. 각 상자는 해체 시 해당 재료를 2~3개 채운다.
         public int TryDeliverIngredients()
         {
             if (deliveryPoint == null || bundlePrefabs.Count == 0)
@@ -95,30 +97,28 @@ namespace _001_Scripts._001_Manager
                 return 0;
             }
 
-            // 같은 상자만 3개 오면 특정 재료가 영영 안 들어온다. 종류가 겹치지 않게 뽑되,
-            // 묶음 종류가 배달 개수보다 적으면 어쩔 수 없이 다시 채워 쓴다.
             List<IngredientBundle> pool = new();
-            int delivered = 0;
-
-            for (int i = 0; i < boxesPerDelivery; i++)
+            foreach (IngredientBundle candidate in bundlePrefabs)
             {
-                if (pool.Count == 0)
+                if (candidate != null && !pool.Contains(candidate))
                 {
-                    pool.AddRange(bundlePrefabs);
+                    pool.Add(candidate);
                 }
+            }
 
+            int delivered = 0;
+            int deliveryCount = Mathf.Min(boxesPerDelivery, pool.Count);
+
+            for (int i = 0; i < deliveryCount; i++)
+            {
                 int index = Random.Range(0, pool.Count);
                 IngredientBundle prefab = pool[index];
                 pool.RemoveAt(index);
 
-                if (prefab == null)
-                {
-                    continue;
-                }
-
                 // 상자끼리 겹쳐 쌓이면 집기 어려우니 옆으로 늘어놓는다.
-                Vector3 offset = new((i - (boxesPerDelivery - 1) * 0.5f) * boxSpacing, 0f, 0f);
-                Instantiate(prefab, deliveryPoint.position + offset, Quaternion.identity);
+                Vector3 offset = new((i - (deliveryCount - 1) * 0.5f) * boxSpacing, 0f, 0f);
+                IngredientBundle deliveredBundle = Instantiate(prefab, deliveryPoint.position + offset, Quaternion.identity);
+                deliveredBundle.ConfigureDeliveryAmount(Random.Range(minStockPerBox, Mathf.Max(minStockPerBox, maxStockPerBox) + 1));
                 delivered++;
             }
 

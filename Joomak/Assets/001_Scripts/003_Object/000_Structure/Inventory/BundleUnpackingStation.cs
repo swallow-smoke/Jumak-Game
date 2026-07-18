@@ -32,16 +32,18 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
             }
 
             ItemBundleData bundleData = bundle.BundleData;
+            int deliveredStockAmount = bundle.DeliveredStockAmount;
+            List<ItemAmount> unpackedItems = new(bundle.GetUnpackedItems());
             if (!carrier.TryConsumeHeldItem(bundle))
             {
                 return;
             }
 
-            Distribute(bundleData.GetUnpackedItems());
+            Distribute(unpackedItems);
             AudioManager.Instance?.PlaySfx(unpackSfx);
             string bundleName = string.IsNullOrWhiteSpace(bundleData.DisplayName) ? "재료 상자" : bundleData.DisplayName;
             GameplayFeedback.Burst(transform.position, new Color(0.38f, 0.9f, 0.48f), "해체 완료!", 15);
-            NotificationModal.Show($"{bundleName} 해체 완료\n보급함의 재고가 채워졌습니다.", NotificationKind.Success, 3f);
+            NotificationModal.Show($"{bundleName} 해체 완료\n보급함 재고 +{deliveredStockAmount}", NotificationKind.Success, 3f);
         }
 
         private static void Distribute(IEnumerable<ItemAmount> unpackedItems)

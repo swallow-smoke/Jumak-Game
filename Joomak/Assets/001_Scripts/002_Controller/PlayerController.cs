@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using _001_Scripts._001_Manager;
 using _001_Scripts._002_Controller.Interface;
 using _001_Scripts._003_Object.Interface;
@@ -17,6 +18,8 @@ namespace _001_Scripts._002_Controller
         [Header("Movement")]
         [SerializeField, Min(0f)] private float moveSpeed = 5f;
         [SerializeField, Min(0f)] private float rotationLerpSpeed = 10f;
+        [Tooltip("손님보다 무겁게 설정해 부딪혔을 때 손님을 밀어낼 수 있게 합니다.")]
+        [SerializeField, Min(1f)] private float playerMass = 8f;
 
         [Header("Dash Upgrade")]
         [SerializeField, Min(1f)] private float dashSpeedMultiplier = 3f;
@@ -31,20 +34,25 @@ namespace _001_Scripts._002_Controller
         [SerializeField] private Key interactKey = Key.Space;
         [SerializeField] private Key scrollUpKey = Key.UpArrow;
         [SerializeField] private Key scrollDownKey = Key.DownArrow;
+        private Key dashKey = Key.LeftShift;
 
         [Header("Interaction")]
         [SerializeField, Min(0f)] private float interactionRadius = 1.2f;
+        [Tooltip("얇은 선 대신 이 반경으로 바라보는 대상을 찾습니다. 움직이는 손님을 조준하기 쉽게 합니다.")]
+        [SerializeField, Min(0.01f)] private float interactionProbeRadius = 0.42f;
+        [SerializeField, Min(0f)] private float interactionReachPadding = 0.65f;
         [SerializeField] private LayerMask interactionLayer = ~0;
 
         [Header("Broom Swing")]
         [Tooltip("빗자루를 들고 있을 때 상호작용 키를 누르면 정밀 조준 대신 이 반경의 부채꼴로 휘두른다.")]
-        [SerializeField, Min(0f)] private float broomSwingRadius = 1.6f;
+        [SerializeField, Min(0f)] private float broomSwingRadius = 2.6f;
         [Tooltip("바라보는 방향 기준 좌우로 이 각도 안에 있으면 맞는다.")]
-        [SerializeField, Range(0f, 180f)] private float broomSwingHalfAngle = 60f;
+        [SerializeField, Range(0f, 180f)] private float broomSwingHalfAngle = 80f;
         [SerializeField] private AudioClip broomSwingSfx;
 
         private readonly RaycastHit2D[] interactionHits = new RaycastHit2D[24];
-        private readonly Collider2D[] broomSwingHits = new Collider2D[8];
+        private readonly Collider2D[] broomSwingHits = new Collider2D[32];
+        private readonly HashSet<IBroomTarget> broomTargetsHit = new();
         private Rigidbody2D body;
         private ISingleItemCarrier carrier;
         private Vector2 moveInput;
@@ -60,29 +68,34 @@ namespace _001_Scripts._002_Controller
         private float dashCooldownRemaining;
         private static int selectionCaptureCount;
         private static int selectionEscapeConsumedFrame = -1;
+        private PlayerControlProfile controlProfile;
 
         public static bool IsAnySelectionInputCaptured => selectionCaptureCount > 0;
         public static bool ShouldBlockPauseMenu =>
             IsAnySelectionInputCaptured || selectionEscapeConsumedFrame == Time.frameCount;
 
-        public string InteractKeyLabel => interactKey switch
-        {
-            Key.Space => "SPACE",
-            Key.Enter => "ENTER",
-            Key.NumpadEnter => "NUM ENTER",
-            _ => interactKey.ToString().ToUpperInvariant()
-        };
+        public PlayerControlProfile ControlProfile => controlProfile;
+        public string InteractKeyLabel => PlayerControlBindings.GetKeyLabel(interactKey);
 
-        // WASD 플레이어는 왼쪽 Shift, 방향키 플레이어는 오른쪽 Shift를 사용한다.
-        private Key DashKey => moveUpKey == Key.UpArrow ? Key.RightShift : Key.LeftShift;
+        private Key DashKey => dashKey;
 
         private void Awake()
         {
+            // 저장된 키를 적용하기 전에 씬에 직렬화된 기본 이동키로 플레이어 역할을 판별한다.
+            controlProfile = moveUpKey == Key.UpArrow && moveLeftKey == Key.LeftArrow
+                ? PlayerControlProfile.Kitchen
+                : PlayerControlProfile.Hall;
+            ApplyControlBindings();
+
             body = GetComponent<Rigidbody2D>();
             carrier = GetComponent<ISingleItemCarrier>();
             broomSwingSfx ??= Resources.Load<AudioClip>("006_Audio/broom_stick");
             body.gravityScale = 0f;
             body.freezeRotation = true;
+            body.bodyType = RigidbodyType2D.Dynamic;
+            body.mass = playerMass;
+            body.interpolation = RigidbodyInterpolation2D.Interpolate;
+            body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
             interactionFilter = new ContactFilter2D();
             interactionFilter.SetLayerMask(interactionLayer);
@@ -92,13 +105,14 @@ namespace _001_Scripts._002_Controller
         private void OnEnable()
         {
             UpgradeApi.UpgradePurchased += OnUpgradePurchased;
+            PlayerControlBindings.Changed += OnControlBindingsChanged;
 
             RefreshCommonUpgrades();
         }
 
         private void Update()
         {
-            if (PauseSettingsMenu.IsPaused)
+            if (PauseSettingsMenu.IsPaused || TutorialOverlay.ShouldBlockGameplayInput)
             {
                 moveInput = Vector2.zero;
                 SetFocusedObject(null);
@@ -153,10 +167,11 @@ namespace _001_Scripts._002_Controller
 
         private void TryInteract()
         {
-            // 빗자루를 든 동안엔 정밀 조준 대신 바라보는 방향으로 휘둘러서 부채꼴 안의 진상 손님을 전부 때린다.
-            // 맞은 대상이 하나도 없으면(휘둘렀는데 허공) 평소처럼 내려놓기로 넘어간다.
-            if (InteractionRules.IsHoldingBroom(carrier) && TrySwingBroom())
+            // 빗자루를 든 동안에는 상호작용 키를 언제나 휘두르기로 소비한다.
+            // 빗나갔다고 같은 입력으로 빗자루를 내려놓으면 연속 타격이 불가능해진다.
+            if (InteractionRules.IsHoldingBroom(carrier))
             {
+                TrySwingBroom();
                 return;
             }
 
@@ -237,6 +252,7 @@ namespace _001_Scripts._002_Controller
         {
             int hitCount = Physics2D.OverlapCircle(body.position, broomSwingRadius, interactionFilter, broomSwingHits);
             bool hitAny = false;
+            broomTargetsHit.Clear();
 
             for (int i = 0; i < hitCount; i++)
             {
@@ -246,7 +262,8 @@ namespace _001_Scripts._002_Controller
                     continue;
                 }
 
-                Vector2 toTarget = (Vector2)hit.transform.position - body.position;
+                Vector2 closestPoint = hit.ClosestPoint(body.position);
+                Vector2 toTarget = closestPoint - body.position;
                 if (toTarget.sqrMagnitude > 0.0001f && Vector2.Angle(lookDirection, toTarget) > broomSwingHalfAngle)
                 {
                     continue;
@@ -257,14 +274,16 @@ namespace _001_Scripts._002_Controller
                     continue;
                 }
 
+                if (!broomTargetsHit.Add(target))
+                {
+                    continue;
+                }
+
                 target.Interact(gameObject);
                 hitAny = true;
             }
 
-            if (hitAny)
-            {
-                AudioManager.Instance?.PlaySfx(broomSwingSfx);
-            }
+            AudioManager.Instance?.PlaySfx(broomSwingSfx);
 
             return hitAny;
         }
@@ -293,6 +312,7 @@ namespace _001_Scripts._002_Controller
         private void OnDisable()
         {
             UpgradeApi.UpgradePurchased -= OnUpgradePurchased;
+            PlayerControlBindings.Changed -= OnControlBindingsChanged;
             capturedSelection?.CancelSelection(gameObject);
             ReleaseSelectionInput();
             moveInput = Vector2.zero;
@@ -313,6 +333,26 @@ namespace _001_Scripts._002_Controller
         }
 
         private void OnUpgradePurchased(UpgradeId _, int __) => RefreshCommonUpgrades();
+
+        private void OnControlBindingsChanged(PlayerControlProfile profile)
+        {
+            if (profile == controlProfile)
+            {
+                ApplyControlBindings();
+            }
+        }
+
+        private void ApplyControlBindings()
+        {
+            moveUpKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.MoveUp);
+            moveDownKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.MoveDown);
+            moveLeftKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.MoveLeft);
+            moveRightKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.MoveRight);
+            interactKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.Interact);
+            scrollUpKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.SelectUp);
+            scrollDownKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.SelectDown);
+            dashKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.Dash);
+        }
 
         private void RefreshCommonUpgrades()
         {
@@ -349,12 +389,13 @@ namespace _001_Scripts._002_Controller
 
         private void UpdateFocusedObject()
         {
-            int hitCount = Physics2D.Raycast(
+            int hitCount = Physics2D.CircleCast(
                 body.position,
+                interactionProbeRadius,
                 lookDirection,
                 interactionFilter,
                 interactionHits,
-                interactionRadius);
+                interactionRadius + interactionReachPadding);
 
             for (int i = 0; i < hitCount; i++)
             {
@@ -365,6 +406,11 @@ namespace _001_Scripts._002_Controller
                 }
 
                 IInteractable interactable = hit.GetComponentInParent<IInteractable>();
+                if (interactable == null)
+                {
+                    continue;
+                }
+
                 SetFocusedObject(interactable);
                 return;
             }
@@ -410,7 +456,9 @@ namespace _001_Scripts._002_Controller
         {
             Gizmos.color = Color.yellow;
             Vector2 direction = Application.isPlaying ? lookDirection : Vector2.down;
-            Gizmos.DrawLine(transform.position, (Vector2)transform.position + direction * interactionRadius);
+            float reach = interactionRadius + interactionReachPadding;
+            Gizmos.DrawLine(transform.position, (Vector2)transform.position + direction * reach);
+            Gizmos.DrawWireSphere((Vector2)transform.position + direction * reach, interactionProbeRadius);
 
             Gizmos.color = new Color(0.9f, 0.5f, 0.1f, 0.6f);
             Vector3 origin = transform.position;

@@ -183,6 +183,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._003_Object._001_Entity.Item.IngredientBundle
   carriedScale: {x: 2, y: 2, z: 2}
   bundleData: {fileID: 11400000, guid: 541f02cc3a55f474da12d9f896fdddc9, type: 2}
+  deliveredStockAmount: 0
 --- !u!114 &5302814648576358159
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -295,7 +296,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3464271158487699351, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6158001067046400836, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
       propertyPath: m_AnchoredPosition.x

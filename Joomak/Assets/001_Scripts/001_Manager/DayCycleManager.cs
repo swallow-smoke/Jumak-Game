@@ -39,11 +39,30 @@ namespace _001_Scripts._001_Manager
         public static int CurrentDay => currentDay;
         public static int LastDayRevenue => lastDayRevenue;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void InstallSceneLoadedHook()
+        {
+            // Title -> Loading -> InGame처럼 실행 중 씬을 바꾸는 경우에도 매번 일차 관리자를 보장한다.
+            // 에디터에서 Domain Reload를 꺼도 중복 구독되지 않도록 먼저 제거한다.
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
-            string sceneName = SceneManager.GetActiveScene().name;
-            if (sceneName is not (GameSceneName or UpgradeSceneName) || FindAnyObjectByType<DayCycleManager>() != null)
+            EnsureManagerForScene(SceneManager.GetActiveScene().name);
+        }
+
+        private static void OnSceneLoaded(Scene scene, LoadSceneMode _)
+        {
+            EnsureManagerForScene(scene.name);
+        }
+
+        private static void EnsureManagerForScene(string sceneName)
+        {
+            if (sceneName is not (GameSceneName or UpgradeSceneName) ||
+                FindAnyObjectByType<DayCycleManager>() != null)
             {
                 return;
             }
@@ -209,10 +228,10 @@ namespace _001_Scripts._001_Manager
             runtimeCanvas = CreateCanvas("DayCycleCanvas", 4500);
             Image badge = CreateImage(runtimeCanvas.transform, "DayBadge", new Color(0.12f, 0.075f, 0.045f, 0.92f));
             SetRect(badge.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                new Vector2(0f, -24f), new Vector2(330f, 72f));
+                new Vector2(0f, -26f), new Vector2(390f, 86f));
 
-            dayText = CreateText(badge.transform, "DayText", string.Empty, 25, new Color32(255, 239, 199, 255), FontStyle.Bold);
-            Stretch(dayText.rectTransform, 12f);
+            dayText = CreateText(badge.transform, "DayText", string.Empty, 30, new Color32(255, 239, 199, 255), FontStyle.Bold);
+            Stretch(dayText.rectTransform, 14f);
         }
 
         private void RefreshDayText()

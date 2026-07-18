@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using _001_Scripts._004_UI.Components;
 
 namespace _001_Scripts._000_Core
 {
@@ -60,6 +61,7 @@ namespace _001_Scripts._000_Core
             DayCycleManager.ResetRun();
             UpgradeApi.ResetRun();
             RunState.Instance?.ResetRun();
+            TutorialOverlay.RequestForNewGame();
             LoadScene(DefaultGameSceneName);
         }
 

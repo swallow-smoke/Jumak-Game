@@ -1109,6 +1109,10 @@ PrefabInstance:
       propertyPath: m_text
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 2068162394033163792, guid: 1299290546c9e2e4eb5e3074fc9adb60, type: 3}
+      propertyPath: worldScale
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 2582886495861725605, guid: 1299290546c9e2e4eb5e3074fc9adb60, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -1170,7 +1174,8 @@ PrefabInstance:
       value: 544.9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 69649579495014076, guid: 1299290546c9e2e4eb5e3074fc9adb60, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1241224425773108880, guid: 1299290546c9e2e4eb5e3074fc9adb60, type: 3}
       insertIndex: -1
@@ -2748,7 +2753,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 2447512f56da6374b940ae8d7f803f81, type: 3}
-    m_FontSize: 21
+    m_FontSize: 24
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
@@ -3547,8 +3552,8 @@ Transform:
   m_GameObject: {fileID: 529585502}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -15.3, y: 13.84, z: 0}
-  m_LocalScale: {x: 1, y: 15, z: 1}
+  m_LocalPosition: {x: -15.3, y: 14.0347, z: 0}
+  m_LocalScale: {x: 1, y: 14.61, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -4564,12 +4569,18 @@ MonoBehaviour:
     y: -2
     width: 18
     height: 22
-  deliveryInterval: 300
-  boxesPerDelivery: 1
+  deliveryInterval: 60
+  boxesPerDelivery: 3
+  minStockPerBox: 2
+  maxStockPerBox: 3
   deliveryPoint: {fileID: 554845286}
   bundlePrefabs:
-  - {fileID: 7190963445397754611, guid: 6f1453aa48eaaeb44a19f46b10a38b49, type: 3}
-  boxSpacing: 1
+  - {fileID: 1460637036185948968, guid: b025a1114e29bef42ab9ac6554d6edeb, type: 3}
+  - {fileID: 1008457202049216688, guid: 415928b2f95dac34295205f3f53b65c8, type: 3}
+  - {fileID: 6412636483999381525, guid: 0cac7a48d6679ce4fabcf32fc0e5353f, type: 3}
+  - {fileID: 7094257061132453239, guid: bb2c6c30f55baf742aa300128e492870, type: 3}
+  - {fileID: 7372116513429456728, guid: 8fa4f518a2952244f998c11e5b96b008, type: 3}
+  boxSpacing: 2
   deliverAtStart: 1
 --- !u!1 &722834634
 GameObject:
@@ -11925,7 +11936,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
   m_UiScaleMode: 0
   m_ReferencePixelsPerUnit: 100
-  m_ScaleFactor: 1
+  m_ScaleFactor: 1.15
   m_ReferenceResolution: {x: 800, y: 600}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
@@ -15767,9 +15778,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -22}
-  m_SizeDelta: {x: 360, y: 34}
-  m_Pivot: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 194.7, y: -181.54}
+  m_SizeDelta: {x: 400, y: 42}
+  m_Pivot: {x: 1, y: 1}
 --- !u!114 &1691050595
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16633,6 +16644,18 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 272.49
       objectReference: {fileID: 0}
+    - target: {fileID: 7083861530973718960, guid: 7be6cf6268d12d143998fb357529df8a, type: 3}
+      propertyPath: worldScale
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8271661334072321196, guid: 7be6cf6268d12d143998fb357529df8a, type: 3}
+      propertyPath: InitialModule.startSizeY.minMaxState
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8271661334072321196, guid: 7be6cf6268d12d143998fb357529df8a, type: 3}
+      propertyPath: InitialModule.startSizeZ.minMaxState
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 8739302159810038818, guid: 7be6cf6268d12d143998fb357529df8a, type: 3}
       propertyPath: m_text
       value: 
@@ -17147,6 +17170,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._002_Controller.PlayerController
   moveSpeed: 10
   rotationLerpSpeed: 10
+  playerMass: 8
   dashSpeedMultiplier: 3
   dashDurationSeconds: 0.18
   dashCooldownSeconds: 5
@@ -17154,15 +17178,17 @@ MonoBehaviour:
   moveDownKey: 33
   moveLeftKey: 15
   moveRightKey: 18
-  interactKey: 1
+  interactKey: 9
   scrollUpKey: 63
   scrollDownKey: 64
   interactionRadius: 1.2
+  interactionProbeRadius: 0.42
+  interactionReachPadding: 0.65
   interactionLayer:
     serializedVersion: 2
     m_Bits: 128
-  broomSwingRadius: 1.6
-  broomSwingHalfAngle: 60
+  broomSwingRadius: 2.6
+  broomSwingHalfAngle: 80
   broomSwingSfx: {fileID: 0}
 --- !u!114 &1927854297
 MonoBehaviour:
@@ -17403,6 +17429,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._002_Controller.PlayerController
   moveSpeed: 10
   rotationLerpSpeed: 10
+  playerMass: 8
   dashSpeedMultiplier: 3
   dashDurationSeconds: 0.18
   dashCooldownSeconds: 5
@@ -17410,15 +17437,17 @@ MonoBehaviour:
   moveDownKey: 64
   moveLeftKey: 61
   moveRightKey: 62
-  interactKey: 9
+  interactKey: 1
   scrollUpKey: 63
   scrollDownKey: 64
   interactionRadius: 1.2
+  interactionProbeRadius: 0.42
+  interactionReachPadding: 0.65
   interactionLayer:
     serializedVersion: 2
     m_Bits: 128
-  broomSwingRadius: 1.6
-  broomSwingHalfAngle: 60
+  broomSwingRadius: 2.6
+  broomSwingHalfAngle: 80
   broomSwingSfx: {fileID: 0}
 --- !u!114 &1932975264
 MonoBehaviour:
@@ -18003,8 +18032,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -469.66, y: -161.9}
-  m_SizeDelta: {x: 1878.6, y: 1080}
+  m_AnchoredPosition: {x: -407, y: -121}
+  m_SizeDelta: {x: 1646.8, y: 907.2819}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1954235626
 MonoBehaviour:
@@ -18226,7 +18255,7 @@ MonoBehaviour:
     maxSatisfactionDecayPerSecond: 2
     minDecideSeconds: 5
     maxDecideSeconds: 10
-    orderChance: 0.75
+    orderChance: 1
     minEatSeconds: 10
     maxEatSeconds: 60
   recipeDatabase: {fileID: 11400000, guid: ca156ddc65fc0224db38519ebb4d2ec3, type: 2}

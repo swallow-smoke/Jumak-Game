@@ -267,7 +267,7 @@ MonoBehaviour:
   moveDownKey: 33
   moveLeftKey: 15
   moveRightKey: 18
-  interactKey: 1
+  interactKey: 9
   scrollUpKey: 67
   scrollDownKey: 66
   interactionRadius: 1.2

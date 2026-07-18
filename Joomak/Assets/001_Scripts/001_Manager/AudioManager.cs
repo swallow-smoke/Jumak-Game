@@ -10,6 +10,8 @@ namespace _001_Scripts._001_Manager
         private const string SfxVolumeKey = "Audio.SfxVolume";
 
         [SerializeField] private AudioSource bgmSource;
+        [Tooltip("비어 있으면 Resources/006_Audio/BGM을 자동으로 사용합니다.")]
+        [SerializeField] private AudioClip defaultBgm;
         [SerializeField, Min(1)] private int sfxPoolSize = 8;
 
         private AudioSource[] sfxPool;
@@ -44,6 +46,7 @@ namespace _001_Scripts._001_Manager
 
             bgmSource.loop = true;
             bgmSource.playOnAwake = false;
+            bgmSource.spatialBlend = 0f;
 
             sfxPool = new AudioSource[sfxPoolSize];
             for (int i = 0; i < sfxPool.Length; i++)
@@ -58,6 +61,9 @@ namespace _001_Scripts._001_Manager
             sfxVolume = PlayerPrefs.GetFloat(SfxVolumeKey, 1f);
             AudioListener.volume = masterVolume;
             ApplyBgmVolume();
+
+            defaultBgm ??= Resources.Load<AudioClip>("006_Audio/BGM");
+            PlayBgm(defaultBgm, true);
         }
 
         public void PlayBgm(AudioClip clip, bool loop = true)

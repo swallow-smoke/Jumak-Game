@@ -283,8 +283,8 @@ MonoBehaviour:
   promptText: {fileID: 3328415480501081742}
   title: "\uC7AC\uB8CC \uC0C1\uC790"
   actionHint: "E \uC7AC\uB8CC \uAEBC\uB0B4\uAE30"
-  worldOffset: {x: 0, y: 1.2, z: 0}
-  worldScale: 1.15
+  worldOffset: {x: 0, y: 2, z: 0}
+  worldScale: 2
 --- !u!1001 &4269324694144304054
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -379,7 +379,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3464271158487699351, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6158001067046400836, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
       propertyPath: m_AnchoredPosition.x
