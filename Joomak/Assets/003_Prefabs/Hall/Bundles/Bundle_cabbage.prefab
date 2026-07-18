@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1460637036185948968}
   - component: {fileID: 7577472977838551088}
   - component: {fileID: -5789094545199617574}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Bundle_cabbage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -203,7 +203,7 @@ GameObject:
   m_Component:
   - component: {fileID: 208511511285081786}
   - component: {fileID: 3327951050374773009}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -372,9 +372,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1409041688687067314, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3464271158487699351, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
       propertyPath: m_Name
       value: InteractionBubble
+      objectReference: {fileID: 0}
+    - target: {fileID: 3464271158487699351, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4188530823580460569, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 6688571782037833069, guid: 92c8c23f6e277374da98b47ab33c5e76, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
