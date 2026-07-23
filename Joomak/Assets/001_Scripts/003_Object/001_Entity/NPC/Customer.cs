@@ -8,6 +8,7 @@ using _001_Scripts._003_Object.Interface;
 using _001_Scripts._005_Data._000_Item;
 using _001_Scripts._005_Data.Hall;
 using _001_Scripts._005_Data.Upgrade;
+using _001_Scripts._005_Data.Config;
 using _001_Scripts._004_UI.Components;
 using UnityEngine;
 
@@ -119,6 +120,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
         protected override void Awake()
         {
             base.Awake();
+            ApplyGameBalance();
 
             body = GetComponent<Rigidbody2D>();
             if (body == null)
@@ -206,10 +208,16 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                 return;
             }
 
-            stateTimer += Time.deltaTime;
+            bool tutorialProtected = TutorialOverlay.IsRunning;
+            bool freezeStateTimer = tutorialProtected &&
+                                    State is CustomerState.Rowdy or CustomerState.DineAndDash or CustomerState.Leaving;
+            if (!freezeStateTimer)
+            {
+                stateTimer += Time.deltaTime;
+            }
             RefreshEatingProgress();
 
-            if (IsSatisfactionActive)
+            if (IsSatisfactionActive && !tutorialProtected)
             {
                 satisfaction = Mathf.Max(0f, satisfaction - satisfactionDecayPerSecond * Time.deltaTime);
                 if (satisfaction <= 0f)
@@ -263,6 +271,11 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     break;
 
                 case CustomerState.Rowdy:
+                    if (tutorialProtected)
+                    {
+                        break;
+                    }
+
                     // 정체가 드러난 손놈이 입구로 난동을 부리며 빠져나간다.
                     // 제한시간 안에 빗자루로 제압하지 못하면 그대로 도망친다.
                     if (MoveTowards(exitPosition) || stateTimer >= ResolveSeconds())
@@ -274,6 +287,11 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     break;
 
                 case CustomerState.DineAndDash:
+                    if (tutorialProtected)
+                    {
+                        break;
+                    }
+
                     // 빨갛게 변한 채로 잠깐 멈춰 있다가 튄다. 이 틈에 플레이어가 빗자루를 챙길 수 있다.
                     if (stateTimer < TelegraphSeconds())
                     {
@@ -290,6 +308,12 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
                     break;
 
                 case CustomerState.Leaving:
+                    if (tutorialProtected)
+                    {
+                        body.linearVelocity = Vector2.zero;
+                        break;
+                    }
+
                     if (MoveTowards(exitPosition))
                     {
                         Despawn();
@@ -297,6 +321,23 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
                     break;
             }
+        }
+
+        private void ApplyGameBalance()
+        {
+            GameBalance.EnsureLoaded();
+            CustomerBalance settings = GameBalance.Current.customer;
+            moveSpeed = Mathf.Max(0f, settings.moveSpeed);
+            arriveThreshold = Mathf.Max(0.01f, settings.arriveThreshold);
+            followDistance = Mathf.Max(0.1f, settings.followDistance);
+            npcMass = Mathf.Max(0.1f, settings.mass);
+            movementDamping = Mathf.Max(0f, settings.movementDamping);
+            seatReturnSpeed = Mathf.Max(0.1f, settings.seatReturnSpeed);
+            seatReturnResponsiveness = Mathf.Max(0.1f, settings.seatReturnResponsiveness);
+            seatSnapDistance = Mathf.Max(0.001f, settings.seatSnapDistance);
+            seatArrivalDistance = Mathf.Max(0.1f, settings.seatArrivalDistance);
+            avoidRadius = Mathf.Max(0.05f, settings.avoidRadius);
+            avoidLookAhead = Mathf.Max(0.1f, settings.avoidLookAhead);
         }
 
         private void FixedUpdate()
@@ -378,6 +419,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             seat = targetSeat;
             ReleaseEscort();
             SetState(CustomerState.WalkingToSeat);
+            TutorialProgress.Report(TutorialAction.CustomerSeated);
             return true;
         }
 
@@ -390,6 +432,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
             escort = interactorEscort;
             SetState(CustomerState.Following);
+            TutorialProgress.Report(TutorialAction.CustomerEscorted);
         }
 
         // 착석 후 얼마간 고민하다가 실제로 주문할지 말지를 정한다.
@@ -423,6 +466,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
             OrderId = hall.CreateOrder(this, interactor);
             SetState(CustomerState.WaitingForFood);
+            TutorialProgress.Report(TutorialAction.OrderTaken);
         }
 
         private void TryReceiveDish(GameObject interactor)
@@ -440,6 +484,7 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
             ApplySatisfactionReputation();
             eatDuration = patience.RandomEatSeconds;
             SetState(CustomerState.Eating);
+            TutorialProgress.Report(TutorialAction.DishServed);
             GameplayFeedback.Burst(transform.position + Vector3.up * 0.6f,
                 new Color(1f, 0.68f, 0.2f), "서빙!", 12);
         }
@@ -472,6 +517,12 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
         private void FinishEating()
         {
+            // 실습이 끝날 때까지는 식사를 마친 손님도 자리를 지키게 한다.
+            if (TutorialOverlay.IsRunning)
+            {
+                return;
+            }
+
             // 기획서 4-1 7번: 식사가 끝나면 빈 그릇이 자리에 남고 손님은 퇴장한다.
             if (seat != null)
             {
@@ -732,6 +783,11 @@ namespace _001_Scripts._003_Object._001_Entity.NPC
 
         private void Despawn()
         {
+            if (TutorialOverlay.IsRunning)
+            {
+                return;
+            }
+
             if (hall != null)
             {
                 hall.Unregister(this);

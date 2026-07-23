@@ -1,5 +1,6 @@
 using System;
 using _001_Scripts._005_Data.Upgrade;
+using _001_Scripts._005_Data.Config;
 using UnityEngine;
 
 namespace _001_Scripts._005_Data.Hall
@@ -9,28 +10,21 @@ namespace _001_Scripts._005_Data.Hall
     [Serializable]
     public sealed class HallEventSettings
     {
-        [Header("기획서 9번 - 라운드마다 갱신")]
-        [SerializeField, Min(1f)] private float eventInterval = 45f;
-        [SerializeField, Min(1f)] private float resolveSeconds = 30f;
-        [SerializeField, Range(0f, 1f)] private float rowdyChance = 0.15f;
+        private static HallEventBalance Balance
+        {
+            get
+            {
+                GameBalance.EnsureLoaded();
+                return GameBalance.Current.hallEvents;
+            }
+        }
 
-        [Header("기획서 8번 - 먹튀 (기획서에 확률 명시가 없어 임시값)")]
-        [SerializeField, Range(0f, 1f)] private float dineAndDashChance = 0.15f;
-
-        [Tooltip("먹튀가 튀기 전에 빨갛게 변한 채로 멈춰 있는 시간. 플레이어에게 반응할 틈을 준다.")]
-        [SerializeField, Min(0f)] private float dineAndDashTelegraphSeconds = 3f;
-
-        [Header("기획서 6-3 - 철제 손잡이 빗자루를 사면 낮아진다")]
-        [SerializeField, Min(1)] private int rowdyHits = 5;
-        [SerializeField, Min(1)] private int trashHits = 3;
-        [SerializeField, Min(1)] private int dineAndDashHits = 1;
-
-        public float EventInterval => eventInterval;
-        public float ResolveSeconds => resolveSeconds;
-        public float DineAndDashTelegraphSeconds => dineAndDashTelegraphSeconds;
-        public int RowdyHits => HasIronBroom ? 3 : rowdyHits;
-        public int TrashHits => HasIronBroom ? 2 : trashHits;
-        public int DineAndDashHits => dineAndDashHits;
+        public float EventInterval => Mathf.Max(1f, Balance.eventIntervalSeconds);
+        public float ResolveSeconds => Mathf.Max(1f, Balance.resolveSeconds);
+        public float DineAndDashTelegraphSeconds => Mathf.Max(0f, Balance.dineAndDashTelegraphSeconds);
+        public int RowdyHits => Mathf.Max(1, HasIronBroom ? Balance.ironBroomRowdyHits : Balance.rowdyHits);
+        public int TrashHits => Mathf.Max(1, HasIronBroom ? Balance.ironBroomTrashHits : Balance.trashHits);
+        public int DineAndDashHits => Mathf.Max(1, Balance.dineAndDashHits);
 
         private static bool HasIronBroom
         {
@@ -41,7 +35,7 @@ namespace _001_Scripts._005_Data.Hall
             }
         }
 
-        public bool RollRowdy() => UnityEngine.Random.value < rowdyChance;
-        public bool RollDineAndDash() => UnityEngine.Random.value < dineAndDashChance;
+        public bool RollRowdy() => UnityEngine.Random.value < Mathf.Clamp01(Balance.rowdyChance);
+        public bool RollDineAndDash() => UnityEngine.Random.value < Mathf.Clamp01(Balance.dineAndDashChance);
     }
 }

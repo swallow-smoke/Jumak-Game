@@ -4546,15 +4546,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61ce985c1d9d4b08a3a6c2a455ada378, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._001_Manager.EventManager
-  settings:
-    eventInterval: 45
-    resolveSeconds: 30
-    rowdyChance: 0.15
-    dineAndDashChance: 0.15
-    dineAndDashTelegraphSeconds: 3
-    rowdyHits: 5
-    trashHits: 3
-    dineAndDashHits: 1
   trashPrefab: {fileID: -7895600143987906993, guid: d34c34413af860846b0e5e8bf4fa4cec, type: 3}
   candles:
   - {fileID: 16721526}
@@ -17170,7 +17161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cece027883744ac9a1b9b3827c3cecdf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._002_Controller.PlayerController
-  moveSpeed: 10
+  moveSpeed: 15
   rotationLerpSpeed: 10
   playerMass: 8
   dashSpeedMultiplier: 3
@@ -17429,7 +17420,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cece027883744ac9a1b9b3827c3cecdf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_001_Scripts._002_Controller.PlayerController
-  moveSpeed: 10
+  moveSpeed: 15
   rotationLerpSpeed: 10
   playerMass: 8
   dashSpeedMultiplier: 3
@@ -18250,16 +18241,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5b79c6e3b5474314e854b2bc3fe144f0, type: 2}
   - {fileID: 11400000, guid: 9b20f0004e8b1214ea81d63f9258c765, type: 2}
   - {fileID: 11400000, guid: a5bdca1b30d8982449ba04a7ed40a944, type: 2}
-  patience:
-    foodSeconds: 60
-    startingSatisfaction: 100
-    minSatisfactionDecayPerSecond: 0.5
-    maxSatisfactionDecayPerSecond: 2
-    minDecideSeconds: 5
-    maxDecideSeconds: 10
-    orderChance: 1
-    minEatSeconds: 10
-    maxEatSeconds: 60
   recipeDatabase: {fileID: 11400000, guid: ca156ddc65fc0224db38519ebb4d2ec3, type: 2}
 --- !u!1 &1978039860
 GameObject:

@@ -4,6 +4,7 @@ using _001_Scripts._003_Object._001_Entity;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._005_Data.Hall;
 using _001_Scripts._004_UI.Components;
+using _001_Scripts._005_Data.Config;
 using UnityEngine;
 
 namespace _001_Scripts._001_Manager
@@ -49,8 +50,21 @@ namespace _001_Scripts._001_Manager
 
         public override void Initialize()
         {
+            ApplyGameBalance();
             eventTimer = 0f;
             deliveryTimer = 0f;
+        }
+
+        private void ApplyGameBalance()
+        {
+            GameBalance.EnsureLoaded();
+            DeliveryBalance balance = GameBalance.Current.delivery;
+            deliveryInterval = Mathf.Max(1f, balance.intervalSeconds);
+            boxesPerDelivery = Mathf.Max(1, balance.bundleTypesPerDelivery);
+            minStockPerBox = Mathf.Max(1, balance.minStockPerBundle);
+            maxStockPerBox = Mathf.Max(minStockPerBox, balance.maxStockPerBundle);
+            boxSpacing = Mathf.Max(0.1f, balance.bundleSpacing);
+            deliverAtStart = balance.deliverAtDayStart;
         }
 
         private void Start()
@@ -63,6 +77,12 @@ namespace _001_Scripts._001_Manager
 
         private void Update()
         {
+            // 시작 배달 한 번은 Start에서 이미 오므로, 실습 중 추가 랜덤 이벤트와 중복 배달은 멈춘다.
+            if (TutorialOverlay.IsRunning)
+            {
+                return;
+            }
+
             TickDelivery();
 
             eventTimer += Time.deltaTime;
@@ -97,12 +117,22 @@ namespace _001_Scripts._001_Manager
                 return 0;
             }
 
+            DeliveryBalance balance = GameBalance.Current.delivery;
             List<IngredientBundle> pool = new();
+            List<float> weights = new();
             foreach (IngredientBundle candidate in bundlePrefabs)
             {
                 if (candidate != null && !pool.Contains(candidate))
                 {
+                    string bundleId = candidate.BundleData != null ? candidate.BundleData.BundleId : candidate.name;
+                    float weight = balance.GetWeight(bundleId);
+                    if (weight <= 0f)
+                    {
+                        continue;
+                    }
+
                     pool.Add(candidate);
+                    weights.Add(weight);
                 }
             }
 
@@ -111,9 +141,10 @@ namespace _001_Scripts._001_Manager
 
             for (int i = 0; i < deliveryCount; i++)
             {
-                int index = Random.Range(0, pool.Count);
+                int index = PickWeightedIndex(weights);
                 IngredientBundle prefab = pool[index];
                 pool.RemoveAt(index);
+                weights.RemoveAt(index);
 
                 // 상자끼리 겹쳐 쌓이면 집기 어려우니 옆으로 늘어놓는다.
                 Vector3 offset = new((i - (deliveryCount - 1) * 0.5f) * boxSpacing, 0f, 0f);
@@ -133,6 +164,32 @@ namespace _001_Scripts._001_Manager
             }
 
             return delivered;
+        }
+
+        private static int PickWeightedIndex(IReadOnlyList<float> weights)
+        {
+            float total = 0f;
+            for (int i = 0; i < weights.Count; i++)
+            {
+                total += Mathf.Max(0f, weights[i]);
+            }
+
+            if (total <= 0f)
+            {
+                return Random.Range(0, weights.Count);
+            }
+
+            float roll = Random.value * total;
+            for (int i = 0; i < weights.Count; i++)
+            {
+                roll -= Mathf.Max(0f, weights[i]);
+                if (roll <= 0f)
+                {
+                    return i;
+                }
+            }
+
+            return weights.Count - 1;
         }
 
         public void TriggerRandomEvent()

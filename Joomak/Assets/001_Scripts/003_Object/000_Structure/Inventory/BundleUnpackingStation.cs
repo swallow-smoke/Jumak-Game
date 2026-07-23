@@ -40,6 +40,7 @@ namespace _001_Scripts._003_Object._000_Structure.Inventory
             }
 
             Distribute(unpackedItems);
+            TutorialProgress.Report(TutorialAction.BundleUnpacked);
             AudioManager.Instance?.PlaySfx(unpackSfx);
             string bundleName = string.IsNullOrWhiteSpace(bundleData.DisplayName) ? "재료 상자" : bundleData.DisplayName;
             GameplayFeedback.Burst(transform.position, new Color(0.38f, 0.9f, 0.48f), "해체 완료!", 15);

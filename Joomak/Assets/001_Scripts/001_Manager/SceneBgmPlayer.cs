@@ -11,7 +11,7 @@ namespace _001_Scripts._001_Manager
 
         private void Start()
         {
-            bgmClip ??= Resources.Load<AudioClip>("006_Audio/BGM");
+            bgmClip ??= AudioManager.LoadDefaultBgm();
             AudioManager.Instance?.PlayBgm(bgmClip, loop);
         }
 

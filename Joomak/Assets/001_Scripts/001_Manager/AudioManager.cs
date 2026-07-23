@@ -10,7 +10,7 @@ namespace _001_Scripts._001_Manager
         private const string SfxVolumeKey = "Audio.SfxVolume";
 
         [SerializeField] private AudioSource bgmSource;
-        [Tooltip("비어 있으면 Resources/006_Audio/BGM을 자동으로 사용합니다.")]
+        [Tooltip("비어 있으면 Resources/Audio/BGM을 자동으로 사용합니다.")]
         [SerializeField] private AudioClip defaultBgm;
         [SerializeField, Min(1)] private int sfxPoolSize = 8;
 
@@ -62,8 +62,22 @@ namespace _001_Scripts._001_Manager
             AudioListener.volume = masterVolume;
             ApplyBgmVolume();
 
-            defaultBgm ??= Resources.Load<AudioClip>("006_Audio/BGM");
-            PlayBgm(defaultBgm, true);
+            defaultBgm ??= LoadDefaultBgm();
+            if (defaultBgm == null)
+            {
+                Debug.LogError("[Audio] Resources/Audio/BGM 음원을 찾지 못했습니다.", this);
+            }
+            else
+            {
+                PlayBgm(defaultBgm, true);
+            }
+        }
+
+        public static AudioClip LoadDefaultBgm()
+        {
+            // 현재 정식 경로를 먼저 사용하고, 이전 프로젝트 경로도 호환용으로 남겨둔다.
+            return Resources.Load<AudioClip>("Audio/BGM")
+                   ?? Resources.Load<AudioClip>("006_Audio/BGM");
         }
 
         public void PlayBgm(AudioClip clip, bool loop = true)

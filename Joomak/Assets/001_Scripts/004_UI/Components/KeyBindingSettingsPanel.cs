@@ -19,7 +19,8 @@ namespace _001_Scripts._004_UI.Components
             PlayerControlAction.Interact,
             PlayerControlAction.SelectUp,
             PlayerControlAction.SelectDown,
-            PlayerControlAction.Dash
+            PlayerControlAction.Dash,
+            PlayerControlAction.Drop
         };
 
         private readonly Dictionary<(PlayerControlProfile, PlayerControlAction), Text> bindingLabels = new();
@@ -130,7 +131,7 @@ namespace _001_Scripts._004_UI.Components
             panelRoot.transform.SetParent(settingsPanel.transform.parent, false);
             RectTransform rootRect = panelRoot.GetComponent<RectTransform>();
             SetRect(rootRect, Vector2.one * 0.5f, Vector2.one * 0.5f, Vector2.one * 0.5f,
-                Vector2.zero, new Vector2(980f, 720f));
+                Vector2.zero, new Vector2(980f, 760f));
             panelRoot.GetComponent<Image>().color = new Color32(249, 235, 202, 255);
             Shadow shadow = panelRoot.GetComponent<Shadow>();
             shadow.effectColor = new Color(0f, 0f, 0f, 0.55f);
@@ -165,7 +166,7 @@ namespace _001_Scripts._004_UI.Components
             for (int i = 0; i < Actions.Length; i++)
             {
                 PlayerControlAction action = Actions[i];
-                float y = 188f - i * 52f;
+                float y = 198f - i * 46f;
                 Text actionLabel = CreateText(panelRoot.transform, $"{profile}_{action}_Label",
                     PlayerControlBindings.GetActionLabel(action), 19, FontStyle.Normal, new Color32(75, 57, 43, 255));
                 actionLabel.alignment = TextAnchor.MiddleLeft;
@@ -184,7 +185,7 @@ namespace _001_Scripts._004_UI.Components
             Button resetButton = CreateButton(panelRoot.transform, $"{profile}_Reset", "기본값 복원",
                 new Color32(151, 107, 68, 255));
             SetRect(resetButton.GetComponent<RectTransform>(), Vector2.one * 0.5f, Vector2.one * 0.5f,
-                Vector2.one * 0.5f, new Vector2(centerX, -248f), new Vector2(210f, 48f));
+                Vector2.one * 0.5f, new Vector2(centerX, -240f), new Vector2(210f, 48f));
             resetButton.onClick.AddListener(() =>
             {
                 PlayerControlBindings.Reset(profile);

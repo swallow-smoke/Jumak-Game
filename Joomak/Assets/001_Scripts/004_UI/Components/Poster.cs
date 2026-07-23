@@ -12,6 +12,8 @@ namespace _001_Scripts._004_UI.Components
     public sealed class Poster : MonoBehaviour
     {
         [SerializeField] private Image resultImage;
+        [SerializeField] private Text foodNameText;
+        [SerializeField] private Text stationNameText;
         [SerializeField] private Text ingredientsText;
 
         [Header("Spawn Animation")]
@@ -24,6 +26,7 @@ namespace _001_Scripts._004_UI.Components
         private void Awake()
         {
             rectTransform = (RectTransform)transform;
+            EnsureHeaderTexts();
         }
 
         private void OnEnable()
@@ -56,6 +59,7 @@ namespace _001_Scripts._004_UI.Components
             }
 
             SetResultImage(recipe.Result.Item);
+            SetHeaderTexts(recipe);
             SetIngredientsText(recipe);
         }
 
@@ -71,6 +75,69 @@ namespace _001_Scripts._004_UI.Components
             {
                 ingredientsText.text = string.Empty;
             }
+
+            if (foodNameText != null)
+            {
+                foodNameText.text = string.Empty;
+            }
+
+            if (stationNameText != null)
+            {
+                stationNameText.text = string.Empty;
+            }
+        }
+
+        private void SetHeaderTexts(RecipeData recipe)
+        {
+            ItemBase result = recipe.Result.Item;
+            if (foodNameText != null)
+            {
+                foodNameText.text = result != null && !string.IsNullOrWhiteSpace(result.DisplayName)
+                    ? result.DisplayName
+                    : recipe.name;
+            }
+
+            if (stationNameText != null)
+            {
+                stationNameText.text = $"제작: {recipe.StationDisplayName}";
+            }
+        }
+
+        private void EnsureHeaderTexts()
+        {
+            Font font = ingredientsText != null
+                ? ingredientsText.font
+                : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            foodNameText ??= CreateHeaderText("Food Name", font, 25, FontStyle.Bold,
+                new Vector2(0f, 251f), new Vector2(268f, 42f), new Color32(73, 39, 23, 255));
+            stationNameText ??= CreateHeaderText("Station Name", font, 17, FontStyle.Bold,
+                new Vector2(0f, 216f), new Vector2(268f, 32f), new Color32(145, 82, 43, 255));
+        }
+
+        private Text CreateHeaderText(string objectName, Font font, int fontSize, FontStyle style,
+            Vector2 position, Vector2 size, Color color)
+        {
+            GameObject root = new(objectName, typeof(RectTransform), typeof(Text));
+            root.transform.SetParent(transform, false);
+
+            RectTransform rect = root.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.one * 0.5f;
+            rect.anchorMax = Vector2.one * 0.5f;
+            rect.pivot = Vector2.one * 0.5f;
+            rect.anchoredPosition = position;
+            rect.sizeDelta = size;
+
+            Text text = root.GetComponent<Text>();
+            text.font = font;
+            text.fontSize = fontSize;
+            text.fontStyle = style;
+            text.color = color;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.raycastTarget = false;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            return text;
         }
 
         private void SetResultImage(ItemBase result)

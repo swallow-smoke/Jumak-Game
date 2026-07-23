@@ -285,6 +285,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             selectedRecipe = recipes[selectingIndex];
             selectingInteractor = null;
             state = State.Idle;
+            TutorialProgress.Report(TutorialAction.RecipeSelected);
             PlayInteractionSfx();
         }
 
@@ -323,6 +324,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             {
                 remainingCookTime = selectedRecipe.CookTime * CookTimeMultiplier;
                 state = State.Cooking;
+                TutorialProgress.Report(TutorialAction.CookingStarted);
                 GameplayFeedback.Burst(transform.position + Vector3.up * 0.45f,
                     new Color(1f, 0.55f, 0.16f), "조리 시작!", 11);
             }
@@ -364,6 +366,7 @@ namespace _001_Scripts._003_Object._000_Structure.Cooker
             readyElapsedSeconds = 0f;
             outputIsFailed = false;
             state = State.Ready;
+            TutorialProgress.Report(TutorialAction.DishCompleted);
             GameplayFeedback.Burst(transform.position + Vector3.up * 0.5f,
                 new Color(1f, 0.8f, 0.24f), "요리 완성!", 16);
         }

@@ -19,7 +19,8 @@ namespace _001_Scripts._002_Controller
         Interact,
         SelectUp,
         SelectDown,
-        Dash
+        Dash,
+        Drop
     }
 
     public static class PlayerControlBindings
@@ -75,6 +76,7 @@ namespace _001_Scripts._002_Controller
             PlayerControlAction.SelectUp => "선택 위",
             PlayerControlAction.SelectDown => "선택 아래",
             PlayerControlAction.Dash => "대시",
+            PlayerControlAction.Drop => "아이템 내려놓기",
             _ => action.ToString()
         };
 
@@ -109,6 +111,7 @@ namespace _001_Scripts._002_Controller
                     PlayerControlAction.SelectUp => Key.PageUp,
                     PlayerControlAction.SelectDown => Key.PageDown,
                     PlayerControlAction.Dash => Key.LeftShift,
+                    PlayerControlAction.Drop => Key.Q,
                     _ => Key.None
                 };
             }
@@ -123,6 +126,7 @@ namespace _001_Scripts._002_Controller
                 PlayerControlAction.SelectUp => Key.UpArrow,
                 PlayerControlAction.SelectDown => Key.DownArrow,
                 PlayerControlAction.Dash => Key.RightShift,
+                PlayerControlAction.Drop => Key.RightCtrl,
                 _ => Key.None
             };
         }

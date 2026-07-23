@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "player": {
+    "moveSpeed": 10.0,
+    "rotationLerpSpeed": 10.0,
+    "mass": 8.0,
+    "dashSpeedMultiplier": 3.0,
+    "dashDurationSeconds": 0.18,
+    "dashCooldownSeconds": 5.0,
+    "interactionRadius": 1.2,
+    "interactionProbeRadius": 0.42,
+    "interactionReachPadding": 0.65,
+    "heldItemDropDistance": 1.0,
+    "broomSwingRadius": 3.2,
+    "broomSwingHalfAngle": 110.0
+  },
+  "delivery": {
+    "intervalSeconds": 60.0,
+    "bundleTypesPerDelivery": 3,
+    "minStockPerBundle": 2,
+    "maxStockPerBundle": 3,
+    "bundleSpacing": 2.0,
+    "deliverAtDayStart": true,
+    "defaultBundleWeight": 1.0,
+    "bundleWeights": [
+      { "bundleId": "cabbage_bundle", "weight": 1.0 },
+      { "bundleId": "green_bean_bundle", "weight": 1.0 },
+      { "bundleId": "radish_bundle", "weight": 1.0 },
+      { "bundleId": "rice_bundle", "weight": 1.0 },
+      { "bundleId": "soybean_paste_bundle", "weight": 1.0 },
+      { "bundleId": "garlic_bundle", "weight": 1.0 },
+      { "bundleId": "meat_bundle", "weight": 1.0 }
+    ]
+  },
+  "hallEvents": {
+    "eventIntervalSeconds": 45.0,
+    "resolveSeconds": 30.0,
+    "rowdyChance": 0.15,
+    "dineAndDashChance": 0.15,
+    "dineAndDashTelegraphSeconds": 3.0,
+    "rowdyHits": 5,
+    "trashHits": 3,
+    "dineAndDashHits": 1,
+    "ironBroomRowdyHits": 3,
+    "ironBroomTrashHits": 2
+  },
+  "customer": {
+    "moveSpeed": 2.4,
+    "arriveThreshold": 0.22,
+    "followDistance": 2.2,
+    "mass": 1.0,
+    "movementDamping": 3.0,
+    "seatReturnSpeed": 4.5,
+    "seatReturnResponsiveness": 8.0,
+    "seatSnapDistance": 0.04,
+    "seatArrivalDistance": 0.85,
+    "avoidRadius": 0.78,
+    "avoidLookAhead": 3.1,
+    "foodSeconds": 60.0,
+    "startingSatisfaction": 100.0,
+    "minSatisfactionDecayPerSecond": 0.5,
+    "maxSatisfactionDecayPerSecond": 2.0,
+    "minDecideSeconds": 5.0,
+    "maxDecideSeconds": 10.0,
+    "orderChance": 1.0,
+    "minEatSeconds": 10.0,
+    "maxEatSeconds": 60.0
+  },
+  "hall": {
+    "customerSpawnIntervalSeconds": 20.0,
+    "startingTableCount": 2,
+    "maxTableCount": 6
+  },
+  "reputation": {
+    "startingValue": 20,
+    "maximumValue": 100,
+    "deathEndingThreshold": 0,
+    "endingFadeSeconds": 1.2,
+    "deleteSaveOnDeath": true
+  },
+  "componentOverrides": [
+    { "enabled": true, "scene": "InGame", "objectPath": "", "component": "DayCycleManager", "field": "dayDurationSeconds", "value": "180" },
+    { "enabled": true, "scene": "InGame", "objectPath": "", "component": "DayCycleManager", "field": "settlementDisplaySeconds", "value": "3" },
+    { "enabled": true, "scene": "InGame", "objectPath": "", "component": "CookingStation", "field": "failTimeoutSeconds", "value": "5" },
+    { "enabled": true, "scene": "InGame", "objectPath": "", "component": "SupplyBox", "field": "maxStack", "value": "10" }
+  ]
+}

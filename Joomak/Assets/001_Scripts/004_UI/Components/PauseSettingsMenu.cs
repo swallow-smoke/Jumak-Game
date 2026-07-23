@@ -77,6 +77,11 @@ namespace _001_Scripts._004_UI.Components
 
         private void Update()
         {
+            if (ReputationDeathEnding.IsActive || CheatConsole.IsOpen)
+            {
+                return;
+            }
+
             if (keyBindingPanel != null && keyBindingPanel.HandleKeyboardInput())
             {
                 return;

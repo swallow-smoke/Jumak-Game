@@ -8,6 +8,8 @@ using _001_Scripts._003_Object._001_Entity.NPC;
 using _001_Scripts._005_Data._000_Item;
 using _001_Scripts._005_Data.Hall;
 using _001_Scripts._005_Data.Upgrade;
+using _001_Scripts._005_Data.Config;
+using _001_Scripts._004_UI.Components;
 using UnityEngine;
 
 namespace _001_Scripts._001_Manager
@@ -49,6 +51,7 @@ namespace _001_Scripts._001_Manager
 
         public override void Initialize()
         {
+            ApplyGameBalance();
             PopulateMenuFromRecipeDatabase();
 
             subscriptions.Add(HallMessagePort.OnDishReady(OnDishReady));
@@ -61,6 +64,15 @@ namespace _001_Scripts._001_Manager
             // 영업 시작 직후 첫 손님을 보여주고, 이후부터 설정된 간격으로 받는다.
             // 첫 스폰까지 20초 동안 아무 일도 없으면 설정이 고장 난 것처럼 보이기 쉽다.
             spawnTimer = spawnInterval;
+        }
+
+        private void ApplyGameBalance()
+        {
+            GameBalance.EnsureLoaded();
+            HallBalance settings = GameBalance.Current.hall;
+            spawnInterval = Mathf.Max(1f, settings.customerSpawnIntervalSeconds);
+            startingTableCount = Mathf.Max(1, settings.startingTableCount);
+            maxTableCount = Mathf.Max(startingTableCount, settings.maxTableCount);
         }
 
         private void PopulateMenuFromRecipeDatabase()
@@ -119,6 +131,12 @@ namespace _001_Scripts._001_Manager
 
         private void Update()
         {
+            // 실습 중에는 안내에 사용할 손님 한 명만 유지해 입구와 식탁이 붐비지 않게 한다.
+            if (TutorialOverlay.IsRunning && customers.Count >= 1)
+            {
+                return;
+            }
+
             spawnTimer += Time.deltaTime;
             if (spawnTimer < spawnInterval)
             {
@@ -364,29 +382,29 @@ namespace _001_Scripts._001_Manager
             record.Customer != null ? record.Customer.CustomerId : null,
             record.Status);
 
-        private void TrySpawnCustomer()
+        public bool TrySpawnCustomer()
         {
             if (customerPrefabs.Count == 0)
             {
                 Debug.LogWarning("[Hall] Customer Prefabs가 비어 있어 손님을 생성할 수 없습니다.", this);
-                return;
+                return false;
             }
 
             if (entrance == null)
             {
                 Debug.LogWarning("[Hall] Customer Entrance가 연결되지 않아 손님을 생성할 수 없습니다.", this);
-                return;
+                return false;
             }
 
             if (menu.Count == 0)
             {
                 Debug.LogWarning("[Hall] Menu가 비어 있어 손님을 생성할 수 없습니다.", this);
-                return;
+                return false;
             }
 
             if (!entrance.TryGetWaitingSpot(CountWaitingCustomers(), out Vector3 waitSpot))
             {
-                return;
+                return false;
             }
 
             // 기획서 9번: 손놈 발생 확률은 손님 단위로 굴린다.
@@ -396,6 +414,7 @@ namespace _001_Scripts._001_Manager
             customer.Initialize(this, patience, waitSpot, entrance.ExitPosition, rowdy);
             customers.Add(customer);
             Debug.Log($"[Hall] 손님 등장: {customer.name} ({customers.Count}/{entrance.WaitingCapacity})", customer);
+            return true;
         }
 
         // 손님 프리팹이 여러 종류면 스폰할 때마다 순서대로 번갈아 쓴다 (매번 같은 손님만 나오지 않게).

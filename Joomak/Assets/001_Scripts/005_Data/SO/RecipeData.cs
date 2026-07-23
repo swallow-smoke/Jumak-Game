@@ -16,6 +16,14 @@ namespace _001_Scripts._005_Data._000_Item
 
         public string RecipeId => recipeId;
         public CookingStationType StationType => stationType;
+        public string StationDisplayName => stationType switch
+        {
+            CookingStationType.Cauldron => "가마솥 조리대",
+            CookingStationType.Griddle => "부침 조리대",
+            CookingStationType.PicklingTable => "절임 조리대",
+            CookingStationType.FermentationJar => "발효 장독대",
+            _ => "조리대"
+        };
         public IReadOnlyList<ItemAmount> Ingredients => ingredients;
         public ItemAmount Result => result;
         public float CookTime => cookTime;

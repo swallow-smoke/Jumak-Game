@@ -39,6 +39,14 @@ namespace _001_Scripts._001_Manager
         public static int CurrentDay => currentDay;
         public static int LastDayRevenue => lastDayRevenue;
 
+        public void CheatEndDay()
+        {
+            if (!dayEnding && SceneManager.GetActiveScene().name == GameSceneName)
+            {
+                remainingSeconds = 0f;
+            }
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void InstallSceneLoadedHook()
         {
@@ -138,7 +146,12 @@ namespace _001_Scripts._001_Manager
                 return;
             }
 
-            remainingSeconds = Mathf.Max(0f, remainingSeconds - Time.deltaTime);
+            // 실습형 튜토리얼 중에는 게임은 움직이되 하루 제한시간만 멈춘다.
+            // 배우는 도중 정산 씬으로 넘어가 튜토리얼이 끊기는 것을 막는다.
+            if (!TutorialOverlay.IsRunning)
+            {
+                remainingSeconds = Mathf.Max(0f, remainingSeconds - Time.deltaTime);
+            }
             autoSaveTimer += Time.unscaledDeltaTime;
             if (autoSaveTimer >= 10f)
             {

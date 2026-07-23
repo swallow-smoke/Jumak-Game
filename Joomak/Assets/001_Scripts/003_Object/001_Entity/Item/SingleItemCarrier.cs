@@ -1,5 +1,6 @@
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using UnityEngine;
+using _001_Scripts._004_UI.Components;
 
 namespace _001_Scripts._003_Object._001_Entity.Item
 {
@@ -31,6 +32,10 @@ namespace _001_Scripts._003_Object._001_Entity.Item
 
             HeldItem = item;
             item.SetCarried(handPoint);
+            if (item is IngredientBundle)
+            {
+                TutorialProgress.Report(TutorialAction.BundlePickedUp);
+            }
             return true;
         }
 

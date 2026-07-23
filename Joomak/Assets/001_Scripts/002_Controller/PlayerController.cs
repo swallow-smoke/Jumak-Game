@@ -5,6 +5,7 @@ using _001_Scripts._003_Object.Interface;
 using _001_Scripts._003_Object._001_Entity.Item;
 using _001_Scripts._003_Object._001_Entity.Item.Interface;
 using _001_Scripts._005_Data.Upgrade;
+using _001_Scripts._005_Data.Config;
 using _001_Scripts._004_UI.Components;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -35,6 +36,8 @@ namespace _001_Scripts._002_Controller
         [SerializeField] private Key scrollUpKey = Key.UpArrow;
         [SerializeField] private Key scrollDownKey = Key.DownArrow;
         private Key dashKey = Key.LeftShift;
+        private Key dropKey = Key.Q;
+        private float heldItemDropDistance = 1f;
 
         [Header("Interaction")]
         [SerializeField, Min(0f)] private float interactionRadius = 1.2f;
@@ -58,6 +61,7 @@ namespace _001_Scripts._002_Controller
         private Vector2 moveInput;
         private Vector2 lookDirection = Vector2.down;
         private ContactFilter2D interactionFilter;
+        private ContactFilter2D broomFilter;
         private IInteractable focusedInteractable;
         private InteractionOutline2D focusedOutline;
         private InteractionPromptBubble focusedPrompt;
@@ -81,6 +85,8 @@ namespace _001_Scripts._002_Controller
 
         private void Awake()
         {
+            ApplyGameBalance();
+
             // 저장된 키를 적용하기 전에 씬에 직렬화된 기본 이동키로 플레이어 역할을 판별한다.
             controlProfile = moveUpKey == Key.UpArrow && moveLeftKey == Key.LeftArrow
                 ? PlayerControlProfile.Kitchen
@@ -100,6 +106,14 @@ namespace _001_Scripts._002_Controller
             interactionFilter = new ContactFilter2D();
             interactionFilter.SetLayerMask(interactionLayer);
             interactionFilter.useTriggers = true;
+
+            // 빗자루 대상은 손님/쓰레기의 레이어 설정 실수와 무관하게 잡혀야 한다.
+            broomFilter = new ContactFilter2D
+            {
+                useTriggers = true,
+                useLayerMask = false,
+                useDepth = false
+            };
         }
 
         private void OnEnable()
@@ -112,7 +126,8 @@ namespace _001_Scripts._002_Controller
 
         private void Update()
         {
-            if (PauseSettingsMenu.IsPaused || TutorialOverlay.ShouldBlockGameplayInput)
+            if (PauseSettingsMenu.IsPaused || TutorialOverlay.ShouldBlockGameplayInput ||
+                ReputationDeathEnding.IsActive || CheatConsole.IsOpen)
             {
                 moveInput = Vector2.zero;
                 SetFocusedObject(null);
@@ -135,6 +150,9 @@ namespace _001_Scripts._002_Controller
             if (moveInput.sqrMagnitude > 0f)
             {
                 lookDirection = moveInput.normalized;
+                TutorialProgress.Report(controlProfile == PlayerControlProfile.Hall
+                    ? TutorialAction.HallMoved
+                    : TutorialAction.KitchenMoved);
             }
 
             dashCooldownRemaining = Mathf.Max(0f, dashCooldownRemaining - Time.deltaTime);
@@ -144,6 +162,11 @@ namespace _001_Scripts._002_Controller
             }
 
             UpdateFocusedObject();
+
+            if (keyboard[dropKey].wasPressedThisFrame)
+            {
+                TryDropHeldItem();
+            }
 
             if (keyboard[interactKey].wasPressedThisFrame)
             {
@@ -183,7 +206,13 @@ namespace _001_Scripts._002_Controller
                 return;
             }
 
-            InteractionRules.TryDropHeldItem(carrier, body.position + lookDirection * 0.6f);
+            TryDropHeldItem();
+        }
+
+        private bool TryDropHeldItem()
+        {
+            return InteractionRules.TryDropHeldItem(carrier,
+                body.position + lookDirection * Mathf.Max(0.2f, heldItemDropDistance));
         }
 
         private bool HandleSelectionInput(Keyboard keyboard)
@@ -250,7 +279,7 @@ namespace _001_Scripts._002_Controller
 
         private bool TrySwingBroom()
         {
-            int hitCount = Physics2D.OverlapCircle(body.position, broomSwingRadius, interactionFilter, broomSwingHits);
+            int hitCount = Physics2D.OverlapCircle(body.position, broomSwingRadius, broomFilter, broomSwingHits);
             bool hitAny = false;
             broomTargetsHit.Clear();
 
@@ -352,6 +381,25 @@ namespace _001_Scripts._002_Controller
             scrollUpKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.SelectUp);
             scrollDownKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.SelectDown);
             dashKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.Dash);
+            dropKey = PlayerControlBindings.Get(controlProfile, PlayerControlAction.Drop);
+        }
+
+        private void ApplyGameBalance()
+        {
+            GameBalance.EnsureLoaded();
+            PlayerBalance settings = GameBalance.Current.player;
+            moveSpeed = Mathf.Max(0f, settings.moveSpeed);
+            rotationLerpSpeed = Mathf.Max(0f, settings.rotationLerpSpeed);
+            playerMass = Mathf.Max(1f, settings.mass);
+            dashSpeedMultiplier = Mathf.Max(1f, settings.dashSpeedMultiplier);
+            dashDurationSeconds = Mathf.Max(0.05f, settings.dashDurationSeconds);
+            dashCooldownSeconds = Mathf.Max(0f, settings.dashCooldownSeconds);
+            interactionRadius = Mathf.Max(0f, settings.interactionRadius);
+            interactionProbeRadius = Mathf.Max(0.01f, settings.interactionProbeRadius);
+            interactionReachPadding = Mathf.Max(0f, settings.interactionReachPadding);
+            heldItemDropDistance = Mathf.Max(0.2f, settings.heldItemDropDistance);
+            broomSwingRadius = Mathf.Max(0.1f, settings.broomSwingRadius);
+            broomSwingHalfAngle = Mathf.Clamp(settings.broomSwingHalfAngle, 0f, 180f);
         }
 
         private void RefreshCommonUpgrades()
